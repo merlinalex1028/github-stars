@@ -10,10 +10,12 @@ const loading = ref(true)
 const languages = ref<LanguageStat[]>([])
 
 const COLORS = [
-  '#4f6df5', '#db2777', '#059669', '#d97706', '#7c3aed',
-  '#0891b2', '#dc2626', '#65a30d', '#ea580c', '#0d9488',
-  '#8b5cf6', '#c026d3', '#ca8a04', '#0284c7', '#e11d48',
+  '#f59e0b', '#ec4899', '#84a98c', '#7dd3fc', '#c084fc',
+  '#fda4af', '#fbbf24', '#6ee7b7', '#93c5fd', '#f9a8d4',
+  '#d4a574', '#a5b4fc', '#fcd34d', '#67e8f9', '#fca5a5',
 ]
+
+const stickyColors = ['#fef9c3', '#fce7f3', '#dbeafe', '#dcfce7', '#ffffff']
 
 function formatNumber(n: number): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
@@ -105,7 +107,7 @@ onMounted(async () => {
 
     <template v-else>
       <!-- Pie Chart -->
-      <div class="pie-section glass">
+      <div class="pie-section">
         <h2 class="section-title">{{ t('languages.sectionTitle') }}</h2>
         <div class="pie-layout">
           <svg viewBox="0 0 200 200" class="pie-svg">
@@ -119,10 +121,10 @@ onMounted(async () => {
             >
               <title>{{ seg.language }}: {{ seg.pct.toFixed(1) }}%</title>
             </path>
-            <text x="100" y="96" text-anchor="middle" fill="#1e293b" font-size="10" font-weight="800">
+            <text x="100" y="96" text-anchor="middle" fill="#1f2937" font-size="10" font-weight="700" font-family="Caveat, cursive">
               {{ formatNumber(totalStars) }}
             </text>
-            <text x="100" y="110" text-anchor="middle" fill="#64748b" font-size="6">{{ t('languages.totalStars') }}</text>
+            <text x="100" y="110" text-anchor="middle" fill="#6b7280" font-size="6" font-family="Patrick Hand, cursive">{{ t('languages.totalStars') }}</text>
           </svg>
 
           <div class="pie-legend">
@@ -145,8 +147,8 @@ onMounted(async () => {
         <article
           v-for="(lang, i) in languages"
           :key="lang.language"
-          class="lang-card glass"
-          :style="{ '--accent': COLORS[i % COLORS.length] }"
+          class="lang-card"
+          :style="{ '--accent': COLORS[i % COLORS.length], '--sticky-bg': stickyColors[i % stickyColors.length] }"
           @click="navigateToLanguage(lang.language)"
         >
           <div class="lang-card__header">
@@ -178,12 +180,12 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 $max-width: 1280px;
-$bg: #f8faff;
-$card-bg: #ffffff;
-$border: rgba(99, 102, 241, 0.12);
-$glow: #4f6df5;
-$text: #1e293b;
-$text-muted: #64748b;
+$text: #1f2937;
+$text-body: #374151;
+$text-muted: #6b7280;
+$border: #d1d5db;
+$shadow: 3px 3px 0 rgba(0, 0, 0, 0.06);
+$shadow-hover: 5px 5px 0 rgba(0, 0, 0, 0.08);
 
 .languages {
   max-width: $max-width;
@@ -192,33 +194,27 @@ $text-muted: #64748b;
 }
 
 .page-title {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-family: 'Caveat', cursive;
   margin: 0 0 1.5rem;
-  background: linear-gradient(135deg, $glow, #059669);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-.glass {
-  background: $card-bg;
-  border: 1px solid $border;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
-              0 1px 2px rgba(0, 0, 0, 0.06),
-              0 0 1px rgba(99, 102, 241, 0.06);
+  color: $text;
 }
 
 .section-title {
   font-size: 1.25rem;
   font-weight: 700;
+  font-family: 'Caveat', cursive;
   color: $text;
   margin: 0 0 1.25rem;
 }
 
 /* Pie Section */
 .pie-section {
+  background: #ffffff;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
   padding: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -244,7 +240,6 @@ $text-muted: #64748b;
 
   &:hover {
     opacity: 0.85;
-    filter: brightness(1.1);
   }
 }
 
@@ -260,31 +255,34 @@ $text-muted: #64748b;
   gap: 0.5rem;
   cursor: pointer;
   padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
+  border-radius: 2px;
   transition: background 0.2s;
 
   &:hover {
-    background: rgba(99, 102, 241, 0.06);
+    background: #faf8f4;
   }
 }
 
 .legend-dot {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: 2px;
   flex-shrink: 0;
+  border: 1px solid $border;
 }
 
 .legend-label {
   color: $text;
   font-size: 0.85rem;
   font-weight: 600;
+  font-family: 'Patrick Hand', cursive;
   min-width: 100px;
 }
 
 .legend-pct {
   color: $text-muted;
   font-size: 0.82rem;
+  font-family: 'Patrick Hand', cursive;
 }
 
 /* Skeleton */
@@ -296,10 +294,12 @@ $text-muted: #64748b;
 
 .skeleton-card {
   height: 160px;
-  border-radius: 1rem;
-  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  border-radius: 3px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+  border: 1.5px solid $border;
+  box-shadow: $shadow;
 }
 
 @keyframes shimmer {
@@ -317,12 +317,24 @@ $text-muted: #64748b;
 .lang-card {
   padding: 1.25rem;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  background: var(--sticky-bg, #ffffff);
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
+  transform: rotate(-0.5deg);
+
+  &:nth-child(2n) {
+    transform: rotate(0.5deg);
+  }
+
+  &:nth-child(3n) {
+    transform: rotate(-1deg);
+  }
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 16px rgba(79, 109, 245, 0.1);
-    border-color: var(--accent, $glow);
+    transform: translateY(-3px) rotate(0deg);
+    box-shadow: $shadow-hover;
   }
 
   &__header {
@@ -335,14 +347,15 @@ $text-muted: #64748b;
   &__dot {
     width: 12px;
     height: 12px;
-    border-radius: 50%;
-    background: var(--accent, $glow);
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
+    border-radius: 2px;
+    background: var(--accent, #f59e0b);
+    border: 1px solid $border;
   }
 
   &__name {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-weight: 700;
+    font-family: 'Caveat', cursive;
     color: $text;
     margin: 0;
   }
@@ -360,13 +373,15 @@ $text-muted: #64748b;
 
   &__stat-value {
     font-size: 1.1rem;
-    font-weight: 800;
-    color: var(--accent, $glow);
+    font-weight: 700;
+    font-family: 'Caveat', cursive;
+    color: var(--accent, #f59e0b);
   }
 
   &__stat-label {
     font-size: 0.7rem;
     color: $text-muted;
+    font-family: 'Patrick Hand', cursive;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -374,8 +389,9 @@ $text-muted: #64748b;
   &__trend {
     font-size: 0.82rem;
     font-weight: 600;
+    font-family: 'Patrick Hand', cursive;
     padding-top: 0.5rem;
-    border-top: 1px solid $border;
+    border-top: 1px dashed $border;
   }
 }
 

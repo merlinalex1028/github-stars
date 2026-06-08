@@ -89,7 +89,7 @@ const maxStarHeight = () => {
       >
         {{ crumb.label }}
       </router-link>
-      <span class="breadcrumb__sep">/</span>
+      <span class="breadcrumb__sep">&#8594;</span>
       <span class="breadcrumb__current">{{ repo?.fullName || t('repoDetail.loading') }}</span>
     </nav>
 
@@ -102,7 +102,7 @@ const maxStarHeight = () => {
 
     <template v-else-if="repo">
       <!-- Repo Header -->
-      <header class="repo-header glass">
+      <header class="repo-header">
         <div class="repo-header__top">
           <div class="repo-header__avatar">
             <div class="avatar-placeholder">{{ repo.owner.charAt(0).toUpperCase() }}</div>
@@ -126,30 +126,30 @@ const maxStarHeight = () => {
 
       <!-- Stats Row -->
       <div class="stats-row">
-        <div class="stat-block glass" style="--glow: #d97706;">
+        <div class="stat-block stat-block--yellow">
           <div class="stat-block__value">{{ formatNumber(repo.stars) }}</div>
           <div class="stat-block__label">{{ t('repoDetail.stars') }}</div>
         </div>
-        <div class="stat-block glass" style="--glow: #4f6df5;">
+        <div class="stat-block stat-block--blue">
           <div class="stat-block__value">{{ formatNumber(repo.forks) }}</div>
           <div class="stat-block__label">{{ t('repoDetail.forks') }}</div>
         </div>
-        <div class="stat-block glass" style="--glow: #dc2626;">
+        <div class="stat-block stat-block--pink">
           <div class="stat-block__value">{{ formatNumber(repo.openIssues) }}</div>
           <div class="stat-block__label">{{ t('repoDetail.openIssues') }}</div>
         </div>
-        <div class="stat-block glass" style="--glow: #059669;">
+        <div class="stat-block stat-block--green">
           <div class="stat-block__value">{{ latestSnapshot()?.todayStars ?? 0 }}</div>
           <div class="stat-block__label">{{ t('repoDetail.todayStars') }}</div>
         </div>
-        <div class="stat-block glass" style="--glow: #7c3aed;">
+        <div class="stat-block stat-block--white">
           <div class="stat-block__value">{{ latestSnapshot()?.trendScore.toFixed(1) ?? '0' }}</div>
           <div class="stat-block__label">{{ t('repoDetail.trendScore') }}</div>
         </div>
       </div>
 
       <!-- Topics -->
-      <div class="topics-row glass">
+      <div class="topics-row">
         <span class="topics-row__label">{{ t('repoDetail.topics') }}</span>
         <router-link
           v-for="topic in repo.topics"
@@ -163,7 +163,7 @@ const maxStarHeight = () => {
 
       <!-- Charts -->
       <div class="charts-grid">
-        <div class="chart-panel glass">
+        <div class="chart-panel">
           <h3 class="chart-panel__title">{{ t('repoDetail.dailyStarGains') }} {{ t('repoDetail.daysPeriod') }}</h3>
           <div class="bar-chart">
             <div
@@ -181,7 +181,7 @@ const maxStarHeight = () => {
           </div>
         </div>
 
-        <div class="chart-panel glass">
+        <div class="chart-panel">
           <h3 class="chart-panel__title">{{ t('repoDetail.dailyForkGains') }} {{ t('repoDetail.daysPeriod') }}</h3>
           <div class="bar-chart">
             <div
@@ -201,14 +201,14 @@ const maxStarHeight = () => {
       </div>
 
       <!-- Trend Score Line -->
-      <div class="chart-panel glass">
+      <div class="chart-panel">
         <h3 class="chart-panel__title">{{ t('repoDetail.trendScoreOverTime') }}</h3>
         <div class="line-chart">
           <svg viewBox="0 0 600 150" preserveAspectRatio="none" class="line-chart__svg">
             <defs>
               <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#4f6df5" stop-opacity="0.15" />
-                <stop offset="100%" stop-color="#4f6df5" stop-opacity="0" />
+                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.15" />
+                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0" />
               </linearGradient>
             </defs>
             <path
@@ -240,8 +240,10 @@ const maxStarHeight = () => {
                 return 'M' + points.join(' L')
               })()"
               fill="none"
-              stroke="#4f6df5"
-              stroke-width="2"
+              stroke="#f59e0b"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             />
           </svg>
         </div>
@@ -252,26 +254,17 @@ const maxStarHeight = () => {
 
 <style scoped lang="scss">
 $max-width: 1280px;
-$bg: #f8faff;
-$card-bg: #ffffff;
-$border: rgba(99, 102, 241, 0.12);
-$glow: #4f6df5;
-$text: #1e293b;
-$text-muted: #64748b;
+$text: #1f2937;
+$text-body: #374151;
+$text-muted: #6b7280;
+$border: #d1d5db;
+$shadow: 3px 3px 0 rgba(0, 0, 0, 0.06);
+$shadow-hover: 5px 5px 0 rgba(0, 0, 0, 0.08);
 
 .repo-detail {
   max-width: $max-width;
   margin: 0 auto;
   padding: 2rem 1rem;
-}
-
-.glass {
-  background: $card-bg;
-  border: 1px solid $border;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
-              0 1px 2px rgba(0, 0, 0, 0.06),
-              0 0 1px rgba(99, 102, 241, 0.06);
 }
 
 /* Breadcrumb */
@@ -281,6 +274,7 @@ $text-muted: #64748b;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
+  font-family: 'Patrick Hand', cursive;
 
   &__link {
     color: $text-muted;
@@ -288,13 +282,15 @@ $text-muted: #64748b;
     transition: color 0.2s;
 
     &:hover {
-      color: $glow;
+      color: $text;
+      text-decoration: underline;
+      text-decoration-style: dashed;
     }
   }
 
   &__sep {
     color: $text-muted;
-    opacity: 0.5;
+    font-size: 1rem;
   }
 
   &__current {
@@ -311,10 +307,12 @@ $text-muted: #64748b;
 }
 
 .skeleton-block {
-  border-radius: 1rem;
-  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  border-radius: 3px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+  border: 1.5px solid $border;
+  box-shadow: $shadow;
 
   &--header { height: 160px; }
   &--stats { height: 100px; }
@@ -328,6 +326,10 @@ $text-muted: #64748b;
 
 /* Repo Header */
 .repo-header {
+  background: #ffffff;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 
@@ -348,7 +350,8 @@ $text-muted: #64748b;
 
   &__name {
     font-size: 1.75rem;
-    font-weight: 800;
+    font-weight: 700;
+    font-family: 'Caveat', cursive;
     margin: 0;
 
     a {
@@ -356,7 +359,9 @@ $text-muted: #64748b;
       text-decoration: none;
 
       &:hover {
-        color: $glow;
+        color: $text;
+        text-decoration: underline;
+        text-decoration-style: dashed;
       }
     }
   }
@@ -364,6 +369,7 @@ $text-muted: #64748b;
   &__desc {
     color: $text-muted;
     font-size: 0.95rem;
+    font-family: 'Patrick Hand', cursive;
     line-height: 1.5;
     margin: 0.5rem 0 0;
   }
@@ -380,29 +386,32 @@ $text-muted: #64748b;
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, $glow, #7c3aed);
+  background: #fef9c3;
+  border: 2px solid #d1d5db;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  font-weight: 800;
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(79, 109, 245, 0.2);
+  font-weight: 700;
+  font-family: 'Caveat', cursive;
+  color: #92400e;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.06);
 }
 
 .meta-badge {
   font-size: 0.8rem;
   color: $text-muted;
+  font-family: 'Patrick Hand', cursive;
   padding: 0.3rem 0.75rem;
-  border-radius: 999px;
-  border: 1px solid $border;
+  border-radius: 2px;
+  border: 1px dashed $border;
 
   a {
     color: $text-muted;
     text-decoration: none;
 
     &:hover {
-      color: $glow;
+      color: $text;
     }
   }
 }
@@ -418,21 +427,33 @@ $text-muted: #64748b;
 .stat-block {
   text-align: center;
   padding: 1.25rem 1rem;
-  transition: transform 0.2s;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
 
   &:hover {
     transform: translateY(-3px);
+    box-shadow: $shadow-hover;
   }
+
+  &--yellow { background: #fef9c3; }
+  &--blue { background: #dbeafe; }
+  &--pink { background: #fce7f3; }
+  &--green { background: #dcfce7; }
+  &--white { background: #ffffff; }
 
   &__value {
     font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--glow, $glow);
+    font-weight: 700;
+    font-family: 'Caveat', cursive;
+    color: $text;
   }
 
   &__label {
     color: $text-muted;
     font-size: 0.8rem;
+    font-family: 'Patrick Hand', cursive;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-top: 0.25rem;
@@ -445,29 +466,35 @@ $text-muted: #64748b;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+  background: #ffffff;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
   padding: 1rem 1.5rem;
   margin-bottom: 1.5rem;
 
   &__label {
     color: $text-muted;
     font-size: 0.85rem;
+    font-family: 'Patrick Hand', cursive;
     font-weight: 600;
   }
 }
 
 .topic-tag {
   padding: 0.25rem 0.75rem;
-  border-radius: 999px;
+  border-radius: 2px;
   font-size: 0.78rem;
-  background: rgba(124, 58, 237, 0.08);
-  color: #7c3aed;
-  border: 1px solid rgba(124, 58, 237, 0.15);
+  font-family: 'Patrick Hand', cursive;
+  background: #fef9c3;
+  color: #92400e;
+  border: 1px dashed #d1d5db;
   text-decoration: none;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(124, 58, 237, 0.15);
-    box-shadow: 0 1px 4px rgba(124, 58, 237, 0.1);
+    background: #fde68a;
+    border-style: solid;
   }
 }
 
@@ -480,12 +507,17 @@ $text-muted: #64748b;
 }
 
 .chart-panel {
+  background: #ffffff;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
   padding: 1.5rem;
   margin-bottom: 1rem;
 
   &__title {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 700;
+    font-family: 'Caveat', cursive;
     color: $text;
     margin: 0 0 1rem;
   }
@@ -514,19 +546,20 @@ $text-muted: #64748b;
     min-height: 2px;
 
     &--star {
-      background: linear-gradient(180deg, #d97706, rgba(217, 119, 6, 0.15));
-      box-shadow: 0 1px 4px rgba(217, 119, 6, 0.2);
+      background: #f59e0b;
+      opacity: 0.7;
     }
 
     &--fork {
-      background: linear-gradient(180deg, $glow, rgba(79, 109, 245, 0.15));
-      box-shadow: 0 1px 4px rgba(79, 109, 245, 0.2);
+      background: #7dd3fc;
+      opacity: 0.7;
     }
   }
 
   &__label {
     font-size: 0.55rem;
     color: $text-muted;
+    font-family: 'Patrick Hand', cursive;
     margin-top: 0.25rem;
     white-space: nowrap;
     overflow: hidden;

@@ -10,11 +10,13 @@ const loading = ref(true)
 const topics = ref<TopicStat[]>([])
 
 const COLORS = [
-  '#4f6df5', '#db2777', '#059669', '#d97706', '#7c3aed',
-  '#0891b2', '#dc2626', '#65a30d', '#ea580c', '#0d9488',
-  '#8b5cf6', '#c026d3', '#ca8a04', '#0284c7', '#e11d48',
-  '#059669', '#d97706', '#9333ea', '#0891b2', '#84cc16',
+  '#f59e0b', '#ec4899', '#84a98c', '#7dd3fc', '#c084fc',
+  '#fda4af', '#fbbf24', '#6ee7b7', '#93c5fd', '#f9a8d4',
+  '#d4a574', '#a5b4fc', '#fcd34d', '#67e8f9', '#fca5a5',
+  '#84a98c', '#f59e0b', '#c084fc', '#7dd3fc', '#a3e635',
 ]
+
+const stickyColors = ['#fef9c3', '#fce7f3', '#dbeafe', '#dcfce7', '#ffffff']
 
 function formatNumber(n: number): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
@@ -43,11 +45,10 @@ function heatIntensity(todayStars: number): number {
 }
 
 function heatColor(intensity: number): string {
-  const r = Math.round(79 + (219 - 79) * intensity)
-  const g = Math.round(109 - 69 * intensity)
-  const b = Math.round(245 - 187 * intensity)
-  const a = 0.08 + intensity * 0.22
-  return `rgba(${r}, ${g}, ${b}, ${a})`
+  // Pastel hand-drawn feel: amber to pink gradient
+  if (intensity < 0.33) return '#fef9c3'
+  if (intensity < 0.66) return '#fde68a'
+  return '#fce7f3'
 }
 
 function navigateToTopic(topic: string) {
@@ -87,7 +88,7 @@ onMounted(async () => {
 
     <template v-else>
       <!-- Heatmap -->
-      <div class="heatmap-section glass">
+      <div class="heatmap-section">
         <h2 class="section-title">{{ t('topics.heatmapTitle') }}</h2>
         <div class="heatmap-grid">
           <div
@@ -117,8 +118,8 @@ onMounted(async () => {
         <article
           v-for="(topic, i) in topics"
           :key="topic.topic"
-          class="topic-card glass"
-          :style="{ '--accent': COLORS[i % COLORS.length] }"
+          class="topic-card"
+          :style="{ '--accent': COLORS[i % COLORS.length], '--sticky-bg': stickyColors[i % stickyColors.length] }"
           @click="navigateToTopic(topic.topic)"
         >
           <div class="topic-card__header">
@@ -159,12 +160,12 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 $max-width: 1280px;
-$bg: #f8faff;
-$card-bg: #ffffff;
-$border: rgba(99, 102, 241, 0.12);
-$glow: #4f6df5;
-$text: #1e293b;
-$text-muted: #64748b;
+$text: #1f2937;
+$text-body: #374151;
+$text-muted: #6b7280;
+$border: #d1d5db;
+$shadow: 3px 3px 0 rgba(0, 0, 0, 0.06);
+$shadow-hover: 5px 5px 0 rgba(0, 0, 0, 0.08);
 
 .topics {
   max-width: $max-width;
@@ -173,27 +174,17 @@ $text-muted: #64748b;
 }
 
 .page-title {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-family: 'Caveat', cursive;
   margin: 0 0 1.5rem;
-  background: linear-gradient(135deg, #db2777, #7c3aed);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-.glass {
-  background: $card-bg;
-  border: 1px solid $border;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
-              0 1px 2px rgba(0, 0, 0, 0.06),
-              0 0 1px rgba(99, 102, 241, 0.06);
+  color: $text;
 }
 
 .section-title {
   font-size: 1.25rem;
   font-weight: 700;
+  font-family: 'Caveat', cursive;
   color: $text;
   margin: 0 0 1.25rem;
 }
@@ -207,10 +198,12 @@ $text-muted: #64748b;
 
 .skeleton-card {
   height: 180px;
-  border-radius: 1rem;
-  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  border-radius: 3px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+  border: 1.5px solid $border;
+  box-shadow: $shadow;
 }
 
 @keyframes shimmer {
@@ -220,6 +213,10 @@ $text-muted: #64748b;
 
 /* Heatmap */
 .heatmap-section {
+  background: #ffffff;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
   padding: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -232,16 +229,16 @@ $text-muted: #64748b;
 
 .heatmap-cell {
   padding: 1rem 0.75rem;
-  border-radius: 0.75rem;
+  border-radius: 3px;
   text-align: center;
   cursor: pointer;
-  border: 1px solid transparent;
-  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  border: 1.5px solid $border;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.04);
 
   &:hover {
-    transform: scale(1.04);
-    border-color: rgba(99, 102, 241, 0.2);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+    transform: translateY(-2px);
+    box-shadow: $shadow;
   }
 
   &__label {
@@ -249,6 +246,7 @@ $text-muted: #64748b;
     color: $text;
     font-size: 0.78rem;
     font-weight: 600;
+    font-family: 'Patrick Hand', cursive;
     margin-bottom: 0.25rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -259,6 +257,7 @@ $text-muted: #64748b;
     display: block;
     color: $text-muted;
     font-size: 0.7rem;
+    font-family: 'Patrick Hand', cursive;
   }
 }
 
@@ -272,13 +271,15 @@ $text-muted: #64748b;
   &__label {
     font-size: 0.75rem;
     color: $text-muted;
+    font-family: 'Patrick Hand', cursive;
   }
 
   &__bar {
     width: 120px;
-    height: 8px;
-    border-radius: 4px;
-    background: linear-gradient(90deg, rgba(79, 109, 245, 0.1), rgba(219, 39, 119, 0.4));
+    height: 10px;
+    border-radius: 2px;
+    border: 1px solid $border;
+    background: linear-gradient(90deg, #fef9c3, #fde68a, #fce7f3);
   }
 }
 
@@ -292,12 +293,24 @@ $text-muted: #64748b;
 .topic-card {
   padding: 1.25rem;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  background: var(--sticky-bg, #ffffff);
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
+  transform: rotate(-0.5deg);
+
+  &:nth-child(2n) {
+    transform: rotate(0.5deg);
+  }
+
+  &:nth-child(3n) {
+    transform: rotate(-1deg);
+  }
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 16px rgba(79, 109, 245, 0.1);
-    border-color: var(--accent, $glow);
+    transform: translateY(-3px) rotate(0deg);
+    box-shadow: $shadow-hover;
   }
 
   &__header {
@@ -310,30 +323,32 @@ $text-muted: #64748b;
   &__dot {
     width: 10px;
     height: 10px;
-    border-radius: 50%;
-    background: var(--accent, $glow);
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
+    border-radius: 2px;
+    background: var(--accent, #f59e0b);
+    border: 1px solid $border;
   }
 
   &__name {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 700;
+    font-family: 'Caveat', cursive;
     color: $text;
     margin: 0;
   }
 
   &__bar-wrap {
-    height: 4px;
-    background: rgba(99, 102, 241, 0.06);
+    height: 6px;
+    background: #f3f4f6;
     border-radius: 2px;
     margin-bottom: 0.75rem;
     overflow: hidden;
+    border: 1px solid $border;
   }
 
   &__bar {
     height: 100%;
-    border-radius: 2px;
-    background: linear-gradient(90deg, var(--accent, $glow), rgba(139, 92, 246, 0.5));
+    border-radius: 1px;
+    background: var(--accent, #f59e0b);
     transition: width 0.5s ease;
   }
 
@@ -349,14 +364,16 @@ $text-muted: #64748b;
   }
 
   &__stat-value {
-    font-size: 1rem;
-    font-weight: 800;
-    color: var(--accent, $glow);
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Caveat', cursive;
+    color: var(--accent, #f59e0b);
   }
 
   &__stat-label {
     font-size: 0.68rem;
     color: $text-muted;
+    font-family: 'Patrick Hand', cursive;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -364,8 +381,9 @@ $text-muted: #64748b;
   &__trend {
     font-size: 0.82rem;
     font-weight: 600;
+    font-family: 'Patrick Hand', cursive;
     padding-top: 0.5rem;
-    border-top: 1px solid $border;
+    border-top: 1px dashed $border;
   }
 }
 

@@ -120,6 +120,8 @@ const visiblePages = computed(() => {
   for (let i = start; i <= end; i++) pages.push(i)
   return pages
 })
+
+const cardRotations = ['-0.5deg', '0.5deg', '-1deg', '1deg', '-0.8deg', '0.3deg', '-1.5deg', '1.2deg', '-0.3deg', '0.7deg']
 </script>
 
 <template>
@@ -127,7 +129,7 @@ const visiblePages = computed(() => {
     <h1 class="page-title">{{ t('trending.pageTitle') }}</h1>
 
     <!-- Controls -->
-    <div class="controls glass">
+    <div class="controls">
       <div class="controls__row">
         <div class="date-tabs">
           <button
@@ -207,7 +209,7 @@ const visiblePages = computed(() => {
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="repos.length === 0" class="empty-state glass">
+    <div v-else-if="repos.length === 0" class="empty-state">
       <div class="empty-state__icon">&#128270;</div>
       <p class="empty-state__text">{{ t('trending.emptyTitle') }}</p>
       <button class="empty-state__btn" @click="selectedLanguage = ''; selectedTopic = ''; searchQuery = ''">
@@ -217,7 +219,12 @@ const visiblePages = computed(() => {
 
     <!-- Repo Cards -->
     <div v-else class="repo-grid">
-      <article v-for="repo in repos" :key="repo.id" class="repo-card glass">
+      <article
+        v-for="(repo, idx) in repos"
+        :key="repo.id"
+        class="repo-card"
+        :style="{ transform: `rotate(${cardRotations[idx % cardRotations.length]})` }"
+      >
         <div class="repo-card__header">
           <a :href="repo.url" class="repo-card__name">{{ repo.fullName }}</a>
           <span class="repo-card__trend" :class="rankClass(repo.rankChange)">
@@ -227,7 +234,7 @@ const visiblePages = computed(() => {
         </div>
         <p class="repo-card__desc">{{ repo.description }}</p>
         <div class="repo-card__tags">
-          <span v-for="t in repo.topics" :key="t" class="tag">{{ t }}</span>
+          <span v-for="tag in repo.topics" :key="tag" class="tag">{{ tag }}</span>
         </div>
         <div class="repo-card__meta">
           <span class="meta-item meta-item--stars">&#9733; {{ formatNumber(repo.stars) }}</span>
@@ -264,12 +271,12 @@ const visiblePages = computed(() => {
 
 <style scoped lang="scss">
 $max-width: 1280px;
-$bg: #f8faff;
-$card-bg: #ffffff;
-$border: rgba(99, 102, 241, 0.12);
-$glow: #4f6df5;
-$text: #1e293b;
-$text-muted: #64748b;
+$text: #1f2937;
+$text-body: #374151;
+$text-muted: #6b7280;
+$border: #d1d5db;
+$shadow: 3px 3px 0 rgba(0, 0, 0, 0.06);
+$shadow-hover: 5px 5px 0 rgba(0, 0, 0, 0.08);
 
 .trending {
   max-width: $max-width;
@@ -278,26 +285,19 @@ $text-muted: #64748b;
 }
 
 .page-title {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-family: 'Caveat', cursive;
   margin: 0 0 1.5rem;
-  background: linear-gradient(135deg, $glow, #7c3aed);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-.glass {
-  background: $card-bg;
-  border: 1px solid $border;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
-              0 1px 2px rgba(0, 0, 0, 0.06),
-              0 0 1px rgba(99, 102, 241, 0.06);
+  color: $text;
 }
 
 /* Controls */
 .controls {
+  background: #ffffff;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   display: flex;
@@ -315,29 +315,33 @@ $text-muted: #64748b;
 .date-tabs {
   display: flex;
   gap: 0.25rem;
-  background: rgba(99, 102, 241, 0.06);
-  border-radius: 0.625rem;
+  background: #faf8f4;
+  border: 1px dashed $border;
+  border-radius: 3px;
   padding: 0.25rem;
 }
 
 .tab-btn {
   padding: 0.5rem 1.25rem;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 2px;
   background: transparent;
   color: $text-muted;
+  font-family: 'Patrick Hand', cursive;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 
   &.active {
-    background: $glow;
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(79, 109, 245, 0.25);
+    background: #fef9c3;
+    color: $text;
+    border: 1.5px solid $border;
+    box-shadow: $shadow;
   }
 
   &:hover:not(.active) {
     color: $text;
+    background: #f3f4f6;
   }
 }
 
@@ -358,17 +362,18 @@ $text-muted: #64748b;
   &__input {
     width: 100%;
     padding: 0.6rem 0.75rem 0.6rem 2.25rem;
-    border: 1px solid $border;
-    border-radius: 0.5rem;
-    background: #f8fafc;
+    border: none;
+    border-bottom: 2.5px solid $border;
+    border-radius: 0;
+    background: transparent;
     color: $text;
-    font-size: 0.9rem;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.95rem;
     outline: none;
     transition: border-color 0.2s;
 
     &:focus {
-      border-color: $glow;
-      box-shadow: 0 0 0 3px rgba(79, 109, 245, 0.08);
+      border-bottom-color: #1f2937;
     }
 
     &::placeholder {
@@ -385,21 +390,23 @@ $text-muted: #64748b;
   &__label {
     color: $text-muted;
     font-size: 0.85rem;
+    font-family: 'Patrick Hand', cursive;
     white-space: nowrap;
   }
 
   &__dropdown {
     padding: 0.5rem 0.75rem;
-    border: 1px solid $border;
-    border-radius: 0.5rem;
-    background: #f8fafc;
+    border: 1.5px solid $border;
+    border-radius: 3px;
+    background: #faf8f4;
     color: $text;
+    font-family: 'Patrick Hand', cursive;
     font-size: 0.85rem;
     outline: none;
     cursor: pointer;
 
     &:focus {
-      border-color: $glow;
+      border-color: #1f2937;
     }
   }
 }
@@ -413,6 +420,7 @@ $text-muted: #64748b;
   &__label {
     color: $text-muted;
     font-size: 0.85rem;
+    font-family: 'Patrick Hand', cursive;
     white-space: nowrap;
     font-weight: 600;
   }
@@ -426,38 +434,41 @@ $text-muted: #64748b;
 
 .chip {
   padding: 0.3rem 0.75rem;
-  border: 1px solid $border;
-  border-radius: 999px;
+  border: 1.5px dashed $border;
+  border-radius: 3px;
   background: transparent;
   color: $text-muted;
   font-size: 0.78rem;
+  font-family: 'Patrick Hand', cursive;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
 
   &.active {
-    background: rgba(79, 109, 245, 0.1);
-    border-color: $glow;
-    color: $glow;
-    box-shadow: 0 1px 4px rgba(79, 109, 245, 0.1);
+    background: #fef9c3;
+    border-style: solid;
+    border-color: #9ca3af;
+    color: $text;
+    box-shadow: $shadow;
   }
 
   &:hover:not(.active) {
-    border-color: rgba(79, 109, 245, 0.25);
+    border-style: solid;
+    border-color: #9ca3af;
     color: $text;
   }
 
   &--topic.active {
-    background: rgba(219, 39, 119, 0.08);
-    border-color: #db2777;
-    color: #db2777;
-    box-shadow: 0 1px 4px rgba(219, 39, 119, 0.1);
+    background: #fce7f3;
+    border-color: #9ca3af;
+    color: $text;
   }
 }
 
 .results-info {
   color: $text-muted;
   font-size: 0.85rem;
+  font-family: 'Patrick Hand', cursive;
   margin-bottom: 1rem;
 }
 
@@ -470,10 +481,12 @@ $text-muted: #64748b;
 
 .skeleton-card {
   height: 200px;
-  border-radius: 1rem;
-  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  border-radius: 3px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+  border: 1.5px solid $border;
+  box-shadow: $shadow;
 }
 
 @keyframes shimmer {
@@ -485,6 +498,10 @@ $text-muted: #64748b;
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
+  background: #ffffff;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
 
   &__icon {
     font-size: 3rem;
@@ -495,21 +512,26 @@ $text-muted: #64748b;
   &__text {
     color: $text-muted;
     font-size: 1.1rem;
+    font-family: 'Patrick Hand', cursive;
     margin-bottom: 1.5rem;
   }
 
   &__btn {
     padding: 0.6rem 1.5rem;
-    border: 1px solid $glow;
-    border-radius: 0.5rem;
+    border: 1.5px solid $border;
+    border-radius: 3px;
     background: transparent;
-    color: $glow;
+    color: $text;
+    font-family: 'Patrick Hand', cursive;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    box-shadow: $shadow;
 
     &:hover {
-      background: rgba(79, 109, 245, 0.08);
+      background: #faf8f4;
+      box-shadow: $shadow-hover;
+      transform: translateY(-2px);
     }
   }
 }
@@ -518,17 +540,21 @@ $text-muted: #64748b;
 .repo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 1rem;
+  gap: 1.25rem;
   margin-bottom: 2rem;
 }
 
 .repo-card {
   padding: 1.25rem;
-  transition: transform 0.2s, box-shadow 0.2s;
+  background: #ffffff;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 16px rgba(79, 109, 245, 0.1);
+    transform: translateY(-3px) rotate(0deg) !important;
+    box-shadow: $shadow-hover;
   }
 
   &__header {
@@ -542,11 +568,13 @@ $text-muted: #64748b;
     color: $text;
     font-weight: 700;
     font-size: 1rem;
+    font-family: 'Patrick Hand', cursive;
     text-decoration: none;
 
     &:hover {
-      color: $glow;
+      color: $text;
       text-decoration: underline;
+      text-decoration-style: dashed;
     }
   }
 
@@ -554,11 +582,13 @@ $text-muted: #64748b;
     font-size: 0.8rem;
     white-space: nowrap;
     font-weight: 600;
+    font-family: 'Patrick Hand', cursive;
   }
 
   &__desc {
     color: $text-muted;
     font-size: 0.82rem;
+    font-family: 'Patrick Hand', cursive;
     margin: 0 0 0.75rem;
     line-height: 1.4;
     display: -webkit-box;
@@ -580,30 +610,32 @@ $text-muted: #64748b;
     flex-wrap: wrap;
     font-size: 0.8rem;
     color: $text-muted;
+    font-family: 'Patrick Hand', cursive;
   }
 
   &__today {
     margin-top: 0.5rem;
     padding-top: 0.5rem;
-    border-top: 1px solid $border;
+    border-top: 1px dashed $border;
   }
 }
 
 .tag {
   padding: 0.15rem 0.5rem;
-  border-radius: 999px;
+  border-radius: 2px;
   font-size: 0.7rem;
-  background: rgba(124, 58, 237, 0.08);
-  color: #7c3aed;
-  border: 1px solid rgba(124, 58, 237, 0.15);
+  font-family: 'Patrick Hand', cursive;
+  background: #fef9c3;
+  color: #92400e;
+  border: 1px dashed #d1d5db;
 }
 
 .meta-item--stars {
-  color: #d97706;
+  color: #b45309;
 }
 
 .meta-item--score {
-  color: $glow;
+  color: $text;
   font-weight: 600;
 }
 
@@ -611,6 +643,7 @@ $text-muted: #64748b;
   color: #059669;
   font-size: 0.82rem;
   font-weight: 600;
+  font-family: 'Patrick Hand', cursive;
 }
 
 .trend-up { color: #059669; }
@@ -627,24 +660,25 @@ $text-muted: #64748b;
 
 .page-btn {
   padding: 0.5rem 1rem;
-  border: 1px solid $border;
-  border-radius: 0.5rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
   background: transparent;
   color: $text-muted;
   font-size: 0.85rem;
+  font-family: 'Patrick Hand', cursive;
   cursor: pointer;
   transition: all 0.2s;
 
   &.active {
-    background: $glow;
-    color: #fff;
-    border-color: $glow;
-    box-shadow: 0 2px 8px rgba(79, 109, 245, 0.2);
+    color: $text;
+    border-bottom: 2px solid $text;
+    font-weight: 600;
   }
 
   &:hover:not(.active):not(:disabled) {
-    border-color: $glow;
     color: $text;
+    border-bottom: 2px dashed $border;
   }
 
   &:disabled {

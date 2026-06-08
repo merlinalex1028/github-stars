@@ -18,12 +18,14 @@ const topRepos = ref<RepoWithTrend[]>([])
 const loading = ref(true)
 
 const statCards = computed(() => [
-  { label: t('dashboard.totalRepos'), value: stats.value.totalRepos, icon: '&#9733;', color: '#4f6df5' },
-  { label: t('dashboard.todayStars'), value: stats.value.todayStars, icon: '&#11088;', color: '#d97706' },
-  { label: t('dashboard.languages'), value: stats.value.languageCount, icon: '&#127760;', color: '#059669' },
-  { label: t('dashboard.aiProjects'), value: stats.value.aiProjectCount, icon: '&#129302;', color: '#7c3aed' },
-  { label: t('dashboard.topLanguage'), value: stats.value.topLanguage, icon: '&#128187;', color: '#db2777', isText: true },
+  { label: t('dashboard.totalRepos'), value: stats.value.totalRepos, icon: '&#9733;', color: '#f59e0b' },
+  { label: t('dashboard.todayStars'), value: stats.value.todayStars, icon: '&#11088;', color: '#f59e0b' },
+  { label: t('dashboard.languages'), value: stats.value.languageCount, icon: '&#127760;', color: '#10b981' },
+  { label: t('dashboard.aiProjects'), value: stats.value.aiProjectCount, icon: '&#129302;', color: '#3b82f6' },
+  { label: t('dashboard.topLanguage'), value: stats.value.topLanguage, icon: '&#128187;', color: '#ec4899', isText: true },
 ])
+
+const stickyColors = ['#fef9c3', '#fce7f3', '#dbeafe', '#dcfce7', '#ffffff']
 
 onMounted(async () => {
   try {
@@ -97,8 +99,8 @@ function rankClass(change: number): string {
       <div
         v-for="(card, i) in statCards"
         :key="i"
-        class="stat-card glass"
-        :style="{ '--glow': card.color }"
+        class="stat-card"
+        :style="{ '--glow': card.color, '--sticky-bg': stickyColors[i % stickyColors.length] }"
       >
         <div class="stat-card__icon" v-html="card.icon" />
         <div class="stat-card__value">{{ card.isText ? card.value : formatNumber(card.value as number) }}</div>
@@ -106,7 +108,7 @@ function rankClass(change: number): string {
       </div>
     </section>
 
-    <section class="top-repos glass">
+    <section class="top-repos">
       <h2 class="section-title">{{ t('dashboard.topReposTitle') }}</h2>
       <div v-if="loading" class="skeleton-list">
         <div v-for="i in 5" :key="i" class="skeleton-row" />
@@ -130,13 +132,13 @@ function rankClass(change: number): string {
     </section>
 
     <section class="charts-row">
-      <div class="chart-placeholder glass">
+      <div class="chart-placeholder">
         <h3 class="section-title">{{ t('dashboard.starTrend') }}</h3>
         <div class="chart-area">
-          <div class="chart-bar" v-for="h in [40, 65, 55, 80, 70, 90, 75]" :key="h" :style="{ height: h + '%' }" />
+          <div class="chart-bar" v-for="(h, i) in [40, 65, 55, 80, 70, 90, 75]" :key="i" :style="{ height: h + '%' }" />
         </div>
       </div>
-      <div class="chart-placeholder glass">
+      <div class="chart-placeholder">
         <h3 class="section-title">{{ t('dashboard.languageDistribution') }}</h3>
         <div class="chart-donut">
           <div class="donut-ring" />
@@ -148,12 +150,12 @@ function rankClass(change: number): string {
 
 <style scoped lang="scss">
 $max-width: 1280px;
-$bg: #f8faff;
-$card-bg: #ffffff;
-$border: rgba(99, 102, 241, 0.12);
-$glow-primary: #4f6df5;
-$text: #1e293b;
-$text-muted: #64748b;
+$text: #1f2937;
+$text-body: #374151;
+$text-muted: #6b7280;
+$border: #d1d5db;
+$shadow: 3px 3px 0 rgba(0, 0, 0, 0.06);
+$shadow-hover: 5px 5px 0 rgba(0, 0, 0, 0.08);
 
 .dashboard {
   max-width: $max-width;
@@ -168,70 +170,33 @@ $text-muted: #64748b;
 
   &__title {
     font-size: clamp(2.5rem, 6vw, 4.5rem);
-    font-weight: 900;
-    letter-spacing: -0.02em;
+    font-weight: 700;
+    font-family: 'Caveat', cursive;
+    letter-spacing: -0.01em;
     margin: 0;
+    color: $text;
   }
 
   &__glitch {
-    position: relative;
     display: inline-block;
-    color: transparent;
-    background: linear-gradient(135deg, $glow-primary, #7c3aed, #db2777);
-    background-clip: text;
-    -webkit-background-clip: text;
+    color: $text;
+    background: none;
+    background-clip: initial;
+    -webkit-background-clip: initial;
+    -webkit-text-fill-color: initial;
 
     &::before,
     &::after {
-      content: attr(data-text);
-      position: absolute;
-      inset: 0;
-      background: inherit;
-      background-clip: text;
-      -webkit-background-clip: text;
-    }
-
-    &::before {
-      animation: glitch-1 3s infinite;
-      clip-path: inset(0 0 60% 0);
-    }
-
-    &::after {
-      animation: glitch-2 3s infinite;
-      clip-path: inset(40% 0 0 0);
+      display: none;
     }
   }
 
   &__subtitle {
     color: $text-muted;
+    font-family: 'Patrick Hand', cursive;
     font-size: 1.125rem;
     margin-top: 0.75rem;
   }
-}
-
-@keyframes glitch-1 {
-  0%, 100% { transform: translate(0); }
-  20% { transform: translate(-2px, 2px); }
-  40% { transform: translate(2px, -1px); }
-  60% { transform: translate(-1px, -2px); }
-}
-
-@keyframes glitch-2 {
-  0%, 100% { transform: translate(0); }
-  20% { transform: translate(2px, -2px); }
-  40% { transform: translate(-2px, 1px); }
-  60% { transform: translate(1px, 2px); }
-}
-
-/* Glass mixin */
-.glass {
-  background: $card-bg;
-  border: 1px solid $border;
-  border-radius: 1rem;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
-              0 1px 2px rgba(0, 0, 0, 0.06),
-              0 0 1px rgba(99, 102, 241, 0.06);
 }
 
 /* Stats Grid */
@@ -245,11 +210,24 @@ $text-muted: #64748b;
 .stat-card {
   padding: 1.5rem;
   text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  background: var(--sticky-bg, #ffffff);
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
+  transform: rotate(-0.5deg);
+
+  &:nth-child(2n) {
+    transform: rotate(0.5deg);
+  }
+
+  &:nth-child(3n) {
+    transform: rotate(-1deg);
+  }
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1);
+    transform: translateY(-3px) rotate(0deg);
+    box-shadow: $shadow-hover;
   }
 
   &__icon {
@@ -259,13 +237,15 @@ $text-muted: #64748b;
 
   &__value {
     font-size: 1.75rem;
-    font-weight: 800;
-    color: var(--glow, $glow-primary);
+    font-weight: 700;
+    font-family: 'Caveat', cursive;
+    color: var(--glow, #1f2937);
   }
 
   &__label {
     color: $text-muted;
     font-size: 0.85rem;
+    font-family: 'Patrick Hand', cursive;
     margin-top: 0.25rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -274,6 +254,10 @@ $text-muted: #64748b;
 
 /* Top Repos */
 .top-repos {
+  background: #ffffff;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
   padding: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -281,6 +265,7 @@ $text-muted: #64748b;
 .section-title {
   font-size: 1.25rem;
   font-weight: 700;
+  font-family: 'Caveat', cursive;
   color: $text;
   margin: 0 0 1rem;
 }
@@ -296,16 +281,17 @@ $text-muted: #64748b;
   align-items: center;
   gap: 1rem;
   padding: 0.875rem 0;
-  border-bottom: 1px solid $border;
+  border-bottom: 1px dashed $border;
 
   &:last-child {
     border-bottom: none;
   }
 
   &__rank {
-    font-weight: 800;
+    font-weight: 700;
     font-size: 1.1rem;
-    color: $glow-primary;
+    font-family: 'Caveat', cursive;
+    color: #1f2937;
     min-width: 2.5rem;
     text-align: center;
   }
@@ -318,17 +304,20 @@ $text-muted: #64748b;
   &__name {
     color: $text;
     font-weight: 600;
+    font-family: 'Patrick Hand', cursive;
     text-decoration: none;
 
     &:hover {
-      color: $glow-primary;
+      color: #1f2937;
       text-decoration: underline;
+      text-decoration-style: dashed;
     }
   }
 
   &__desc {
     color: $text-muted;
     font-size: 0.8rem;
+    font-family: 'Patrick Hand', cursive;
     margin: 0.2rem 0 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -338,12 +327,17 @@ $text-muted: #64748b;
   &__lang {
     font-size: 0.8rem;
     color: $text-muted;
+    font-family: 'Patrick Hand', cursive;
     white-space: nowrap;
+    padding: 0.15rem 0.5rem;
+    border: 1px dashed $border;
+    border-radius: 2px;
   }
 
   &__stars {
     font-size: 0.85rem;
-    color: #d97706;
+    color: #b45309;
+    font-family: 'Patrick Hand', cursive;
     white-space: nowrap;
   }
 
@@ -352,6 +346,7 @@ $text-muted: #64748b;
     white-space: nowrap;
     min-width: 3rem;
     text-align: right;
+    font-family: 'Patrick Hand', cursive;
   }
 }
 
@@ -368,8 +363,8 @@ $text-muted: #64748b;
 
 .skeleton-row {
   height: 3rem;
-  border-radius: 0.5rem;
-  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  border-radius: 3px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -387,6 +382,10 @@ $text-muted: #64748b;
 }
 
 .chart-placeholder {
+  background: #ffffff;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
   padding: 1.5rem;
   min-height: 280px;
 }
@@ -401,10 +400,16 @@ $text-muted: #64748b;
 
 .chart-bar {
   flex: 1;
-  background: linear-gradient(180deg, $glow-primary 0%, rgba(79, 109, 245, 0.15) 100%);
-  border-radius: 0.375rem 0.375rem 0 0;
-  box-shadow: 0 1px 4px rgba(79, 109, 245, 0.15);
+  border-radius: 2px 2px 0 0;
   transition: height 0.5s ease;
+
+  &:nth-child(7n+1) { background: #f59e0b; }
+  &:nth-child(7n+2) { background: #84a98c; }
+  &:nth-child(7n+3) { background: #7dd3fc; }
+  &:nth-child(7n+4) { background: #fda4af; }
+  &:nth-child(7n+5) { background: #f59e0b; }
+  &:nth-child(7n+6) { background: #84a98c; }
+  &:nth-child(7n+7) { background: #7dd3fc; }
 }
 
 .chart-donut {
@@ -419,11 +424,10 @@ $text-muted: #64748b;
   height: 160px;
   border-radius: 50%;
   border: 24px solid transparent;
-  border-top-color: $glow-primary;
-  border-right-color: #7c3aed;
-  border-bottom-color: #db2777;
-  border-left-color: #059669;
-  box-shadow: 0 2px 8px rgba(79, 109, 245, 0.1);
+  border-top-color: #f59e0b;
+  border-right-color: #84a98c;
+  border-bottom-color: #7dd3fc;
+  border-left-color: #fda4af;
 }
 
 /* Responsive */

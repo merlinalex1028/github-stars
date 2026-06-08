@@ -8,16 +8,19 @@ const dataSources = [
     titleKey: 'about.githubApiTitle',
     descKey: 'about.githubApiDesc',
     icon: '&#128640;',
+    stickyBg: '#fef9c3',
   },
   {
     titleKey: 'about.dailySnapshotsTitle',
     descKey: 'about.dailySnapshotsDesc',
     icon: '&#128197;',
+    stickyBg: '#dbeafe',
   },
   {
     titleKey: 'about.databaseTitle',
     descKey: 'about.databaseDesc',
     icon: '&#9729;',
+    stickyBg: '#dcfce7',
   },
 ]
 
@@ -42,7 +45,12 @@ const algorithmSteps = [
     <section class="section">
       <h2 class="section__title">{{ t('about.dataSourcesTitle') }}</h2>
       <div class="source-grid">
-        <article v-for="src in dataSources" :key="src.titleKey" class="source-card glass">
+        <article
+          v-for="src in dataSources"
+          :key="src.titleKey"
+          class="source-card"
+          :style="{ '--sticky-bg': src.stickyBg }"
+        >
           <div class="source-card__icon" v-html="src.icon" />
           <h3 class="source-card__title">{{ t(src.titleKey) }}</h3>
           <p class="source-card__desc">{{ t(src.descKey) }}</p>
@@ -54,7 +62,7 @@ const algorithmSteps = [
     <section class="section">
       <h2 class="section__title">{{ t('about.algorithmTitle') }}</h2>
       <div class="algo-timeline">
-        <div v-for="step in algorithmSteps" :key="step.step" class="algo-step glass">
+        <div v-for="step in algorithmSteps" :key="step.step" class="algo-step">
           <div class="algo-step__number">{{ step.step }}</div>
           <div class="algo-step__content">
             <h3 class="algo-step__title">{{ t(step.titleKey) }}</h3>
@@ -67,7 +75,7 @@ const algorithmSteps = [
     <!-- Disclaimer -->
     <section class="section">
       <h2 class="section__title">{{ t('about.disclaimerTitle') }}</h2>
-      <div class="disclaimer glass">
+      <div class="disclaimer">
         <div class="disclaimer__icon">&#9888;</div>
         <div class="disclaimer__body">
           <p>{{ t('about.disclaimer1') }}</p>
@@ -87,12 +95,12 @@ const algorithmSteps = [
 
 <style scoped lang="scss">
 $max-width: 1280px;
-$bg: #f8faff;
-$card-bg: #ffffff;
-$border: rgba(99, 102, 241, 0.12);
-$glow: #4f6df5;
-$text: #1e293b;
-$text-muted: #64748b;
+$text: #1f2937;
+$text-body: #374151;
+$text-muted: #6b7280;
+$border: #d1d5db;
+$shadow: 3px 3px 0 rgba(0, 0, 0, 0.06);
+$shadow-hover: 5px 5px 0 rgba(0, 0, 0, 0.08);
 
 .about {
   max-width: $max-width;
@@ -100,29 +108,18 @@ $text-muted: #64748b;
   padding: 2rem 1rem;
 }
 
-.glass {
-  background: $card-bg;
-  border: 1px solid $border;
-  border-radius: 1rem;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
-              0 1px 2px rgba(0, 0, 0, 0.06),
-              0 0 1px rgba(99, 102, 241, 0.06);
-}
-
 .page-title {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-family: 'Caveat', cursive;
   margin: 0 0 1rem;
-  background: linear-gradient(135deg, $glow, #7c3aed);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: $text;
 }
 
 .intro {
   color: $text-muted;
   font-size: 1.05rem;
+  font-family: 'Patrick Hand', cursive;
   line-height: 1.7;
   margin-bottom: 2.5rem;
   max-width: 800px;
@@ -134,7 +131,8 @@ $text-muted: #64748b;
 
   &__title {
     font-size: 1.5rem;
-    font-weight: 800;
+    font-weight: 700;
+    font-family: 'Caveat', cursive;
     color: $text;
     margin: 0 0 1.25rem;
     position: relative;
@@ -147,9 +145,8 @@ $text-muted: #64748b;
       top: 0.25rem;
       bottom: 0.25rem;
       width: 3px;
-      border-radius: 2px;
-      background: linear-gradient(180deg, $glow, #7c3aed);
-      box-shadow: 0 0 8px rgba(79, 109, 245, 0.3);
+      border-radius: 1px;
+      background: #1f2937;
     }
   }
 }
@@ -163,11 +160,24 @@ $text-muted: #64748b;
 
 .source-card {
   padding: 1.5rem;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  background: var(--sticky-bg, #ffffff);
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
+  transform: rotate(-0.5deg);
+
+  &:nth-child(2n) {
+    transform: rotate(0.5deg);
+  }
+
+  &:nth-child(3n) {
+    transform: rotate(-1deg);
+  }
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1);
+    transform: translateY(-3px) rotate(0deg);
+    box-shadow: $shadow-hover;
   }
 
   &__icon {
@@ -178,6 +188,7 @@ $text-muted: #64748b;
   &__title {
     font-size: 1.1rem;
     font-weight: 700;
+    font-family: 'Caveat', cursive;
     color: $text;
     margin: 0 0 0.5rem;
   }
@@ -185,6 +196,7 @@ $text-muted: #64748b;
   &__desc {
     color: $text-muted;
     font-size: 0.9rem;
+    font-family: 'Patrick Hand', cursive;
     line-height: 1.5;
     margin: 0;
   }
@@ -204,7 +216,10 @@ $text-muted: #64748b;
     top: 0;
     bottom: 0;
     width: 2px;
-    background: linear-gradient(180deg, $glow, rgba(79, 109, 245, 0.1));
+    background: $border;
+    border-style: dashed;
+    border-left: 2px dashed $border;
+    background: transparent;
   }
 }
 
@@ -213,20 +228,26 @@ $text-muted: #64748b;
   gap: 1.25rem;
   padding: 1.25rem 1.5rem;
   position: relative;
+  background: #ffffff;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
 
   &__number {
     flex-shrink: 0;
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
-    background: $glow;
-    color: #fff;
-    font-weight: 800;
+    background: #fef9c3;
+    border: 2px solid #d1d5db;
+    color: #92400e;
+    font-weight: 700;
     font-size: 0.85rem;
+    font-family: 'Caveat', cursive;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(79, 109, 245, 0.25);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.04);
     z-index: 1;
   }
 
@@ -237,6 +258,7 @@ $text-muted: #64748b;
   &__title {
     font-size: 1rem;
     font-weight: 700;
+    font-family: 'Caveat', cursive;
     color: $text;
     margin: 0 0 0.375rem;
   }
@@ -244,6 +266,7 @@ $text-muted: #64748b;
   &__desc {
     color: $text-muted;
     font-size: 0.88rem;
+    font-family: 'Patrick Hand', cursive;
     line-height: 1.5;
     margin: 0;
   }
@@ -254,18 +277,22 @@ $text-muted: #64748b;
   display: flex;
   gap: 1.25rem;
   padding: 1.5rem;
-  border-color: rgba(245, 158, 11, 0.2);
+  background: #fef9c3;
+  border: 1.5px solid $border;
+  border-radius: 3px;
+  box-shadow: $shadow;
 
   &__icon {
     font-size: 1.75rem;
     flex-shrink: 0;
-    color: #d97706;
+    color: #b45309;
   }
 
   &__body {
     p {
       color: $text-muted;
       font-size: 0.9rem;
+      font-family: 'Patrick Hand', cursive;
       line-height: 1.6;
       margin: 0 0 0.75rem;
 
@@ -280,12 +307,13 @@ $text-muted: #64748b;
 .about-footer {
   text-align: center;
   padding: 2rem 0 1rem;
-  border-top: 1px solid $border;
+  border-top: 2px dashed $border;
   margin-top: 2rem;
 
   p {
     color: $text-muted;
     font-size: 0.85rem;
+    font-family: 'Patrick Hand', cursive;
     margin: 0;
   }
 
