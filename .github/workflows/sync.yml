@@ -1,0 +1,42 @@
+name: Daily Sync
+
+on:
+  schedule:
+    # Run daily at 02:00 UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Trigger sync endpoint
+        run: |
+          HTTP_STATUS=$(curl -s -o /tmp/response.txt -w "%{http_code}" \
+            -X POST "${{ secrets.SYNC_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.SYNC_SECRET }}" \
+            -H "Content-Type: application/json" \
+            --max-time 30 \
+            --retry 3 \
+            --retry-delay 10)
+
+          echo "HTTP Status: $HTTP_STATUS"
+          echo "Response:"
+          cat /tmp/response.txt
+          echo ""
+
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::error::Sync failed with HTTP status $HTTP_STATUS"
+            exit 1
+          fi
+
+          SUCCESS=$(cat /tmp/response.txt | grep -o '"success":true' || true)
+          if [ -z "$SUCCESS" ]; then
+            echo "::error::Sync endpoint returned success=false"
+            cat /tmp/response.txt
+            exit 1
+          fi
+
+          echo "Sync completed successfully"

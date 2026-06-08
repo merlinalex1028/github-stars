@@ -1,0 +1,362 @@
+// ============================================================
+// GitPulse Dark Sci-Fi Theme - Global Styles
+// ============================================================
+
+@use 'variables' as *;
+@use 'animations';
+
+// ============================================================
+// CSS Reset
+// ============================================================
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: $font-sans;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  color: $text-primary;
+  background-color: $bg-primary;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+// ============================================================
+// Grid Background Pattern (subtle dots)
+// ============================================================
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle, rgba(56, 189, 248, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(
+    ellipse 80% 60% at 50% 30%,
+    black 20%,
+    transparent 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 60% at 50% 30%,
+    black 20%,
+    transparent 100%
+  );
+}
+
+// ============================================================
+// Dark Scrollbar
+// ============================================================
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $bg-secondary;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.2);
+  border-radius: 4px;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: rgba(56, 189, 248, 0.35);
+  }
+}
+
+::-webkit-scrollbar-corner {
+  background: $bg-secondary;
+}
+
+// Firefox
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.2) $bg-secondary;
+}
+
+// ============================================================
+// Base Element Styles
+// ============================================================
+
+a {
+  color: $color-blue;
+  text-decoration: none;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $color-cyan;
+  }
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  color: $text-primary;
+  background: $bg-input;
+  border: 1px solid $border-default;
+  border-radius: $border-radius-sm;
+  outline: none;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+
+  &:focus {
+    border-color: rgba($color-blue, 0.5);
+    box-shadow: 0 0 0 3px rgba($color-blue, 0.1);
+  }
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+// ============================================================
+// Glass Card Base Class
+// ============================================================
+
+.glass-card {
+  @include glass-card;
+  padding: calc($spacing-unit * 3);
+  transition: box-shadow $transition-base, border-color $transition-base, transform $transition-base;
+
+  &:hover {
+    border-color: $border-default;
+    box-shadow: $shadow-elevated;
+    transform: translateY(-2px);
+  }
+}
+
+// ============================================================
+// Utility Classes
+// ============================================================
+
+// Text utilities
+.text-gradient-blue {
+  @include text-gradient($color-blue, $color-cyan);
+}
+
+.text-gradient-purple {
+  @include text-gradient($color-purple, $color-blue);
+}
+
+.text-gradient-green {
+  @include text-gradient($color-green, $color-cyan);
+}
+
+.text-primary   { color: $text-primary; }
+.text-secondary { color: $text-secondary; }
+.text-muted     { color: $text-muted; }
+.text-blue      { color: $color-blue; }
+.text-purple    { color: $color-purple; }
+.text-cyan      { color: $color-cyan; }
+.text-green     { color: $color-green; }
+.text-orange    { color: $color-orange; }
+
+// Font utilities
+.font-sans    { font-family: $font-sans; }
+.font-mono    { font-family: $font-mono; }
+.font-display { font-family: $font-display; }
+
+// Layout utilities
+.container {
+  width: 100%;
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 calc($spacing-unit * 2);
+
+  @include respond-to(md) {
+    padding: 0 calc($spacing-unit * 4);
+  }
+}
+
+// Spacing utilities (generated)
+@for $i from 1 through 8 {
+  .mt-#{$i} { margin-top: calc(#{$spacing-unit} * #{$i}); }
+  .mb-#{$i} { margin-bottom: calc(#{$spacing-unit} * #{$i}); }
+  .ml-#{$i} { margin-left: calc(#{$spacing-unit} * #{$i}); }
+  .mr-#{$i} { margin-right: calc(#{$spacing-unit} * #{$i}); }
+  .mx-#{$i} { margin-left: calc(#{$spacing-unit} * #{$i}); margin-right: calc(#{$spacing-unit} * #{$i}); }
+  .my-#{$i} { margin-top: calc(#{$spacing-unit} * #{$i}); margin-bottom: calc(#{$spacing-unit} * #{$i}); }
+
+  .pt-#{$i} { padding-top: calc(#{$spacing-unit} * #{$i}); }
+  .pb-#{$i} { padding-bottom: calc(#{$spacing-unit} * #{$i}); }
+  .pl-#{$i} { padding-left: calc(#{$spacing-unit} * #{$i}); }
+  .pr-#{$i} { padding-right: calc(#{$spacing-unit} * #{$i}); }
+  .px-#{$i} { padding-left: calc(#{$spacing-unit} * #{$i}); padding-right: calc(#{$spacing-unit} * #{$i}); }
+  .py-#{$i} { padding-top: calc(#{$spacing-unit} * #{$i}); padding-bottom: calc(#{$spacing-unit} * #{$i}); }
+  .gap-#{$i} { gap: calc(#{$spacing-unit} * #{$i}); }
+}
+
+// Flex utilities
+.flex          { display: flex; }
+.flex-col      { flex-direction: column; }
+.flex-wrap     { flex-wrap: wrap; }
+.items-center  { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.flex-1        { flex: 1; }
+
+// Display utilities
+.hidden        { display: none; }
+.block         { display: block; }
+.inline-block  { display: inline-block; }
+
+// Text alignment
+.text-left   { text-align: left; }
+.text-center { text-align: center; }
+.text-right  { text-align: right; }
+
+// Border utilities
+.rounded-sm { border-radius: $border-radius-sm; }
+.rounded    { border-radius: $border-radius; }
+.rounded-lg { border-radius: $border-radius-lg; }
+.rounded-full { border-radius: 9999px; }
+
+// Overflow
+.overflow-hidden { overflow: hidden; }
+.overflow-auto   { overflow: auto; }
+
+// Position
+.relative { position: relative; }
+.absolute { position: absolute; }
+.sticky   { position: sticky; }
+
+// Truncate
+.truncate {
+  @include truncate(1);
+}
+
+.line-clamp-2 {
+  @include truncate(2);
+}
+
+.line-clamp-3 {
+  @include truncate(3);
+}
+
+// ============================================================
+// Glow Button Base
+// ============================================================
+
+.btn-glow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc($spacing-unit);
+  padding: calc($spacing-unit * 1.5) calc($spacing-unit * 3);
+  font-size: $font-size-sm;
+  font-weight: 500;
+  border-radius: $border-radius-sm;
+  transition: all $transition-base;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity $transition-base;
+  }
+
+  &--blue {
+    background: rgba($color-blue, 0.12);
+    border: 1px solid rgba($color-blue, 0.3);
+    color: $color-blue;
+
+    &:hover {
+      background: rgba($color-blue, 0.2);
+      @include glow-border($color-blue, 0.25);
+    }
+  }
+
+  &--purple {
+    background: rgba($color-purple, 0.12);
+    border: 1px solid rgba($color-purple, 0.3);
+    color: $color-purple;
+
+    &:hover {
+      background: rgba($color-purple, 0.2);
+      @include glow-border($color-purple, 0.25);
+    }
+  }
+
+  &--cyan {
+    background: rgba($color-cyan, 0.12);
+    border: 1px solid rgba($color-cyan, 0.3);
+    color: $color-cyan;
+
+    &:hover {
+      background: rgba($color-cyan, 0.2);
+      @include glow-border($color-cyan, 0.25);
+    }
+  }
+
+  &--green {
+    background: rgba($color-green, 0.12);
+    border: 1px solid rgba($color-green, 0.3);
+    color: $color-green;
+
+    &:hover {
+      background: rgba($color-green, 0.2);
+      @include glow-border($color-green, 0.25);
+    }
+  }
+}
+
+// ============================================================
+// Divider
+// ============================================================
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    $border-subtle 20%,
+    $border-default 50%,
+    $border-subtle 80%,
+    transparent
+  );
+}

@@ -1,0 +1,185 @@
+// ============================================================
+// GitPulse Dark Sci-Fi Theme - Variables
+// ============================================================
+
+// ---- Colors: Backgrounds ----
+$bg-primary: #050816;
+$bg-secondary: #070B1F;
+$bg-card: #0B1026;
+$bg-card-hover: #0F1535;
+$bg-elevated: #111833;
+$bg-input: #0A0E22;
+
+// ---- Colors: Accent ----
+$color-blue: #38BDF8;
+$color-purple: #8B5CF6;
+$color-cyan: #22D3EE;
+$color-green: #34D399;
+$color-orange: #F59E0B;
+$color-red: #F87171;
+$color-pink: #F472B6;
+
+// ---- Colors: Text ----
+$text-primary: #F8FAFC;
+$text-secondary: #CBD5E1;
+$text-muted: #64748B;
+$text-disabled: #475569;
+
+// ---- Colors: Border ----
+$border-subtle: rgba(56, 189, 248, 0.08);
+$border-default: rgba(56, 189, 248, 0.15);
+$border-strong: rgba(56, 189, 248, 0.3);
+$border-blue: rgba(56, 189, 248, 0.4);
+$border-purple: rgba(139, 92, 246, 0.4);
+$border-cyan: rgba(34, 211, 238, 0.4);
+
+// ---- Shadows: Glow Effects ----
+$glow-blue: 0 0 15px rgba(56, 189, 248, 0.25),
+            0 0 30px rgba(56, 189, 248, 0.1);
+
+$glow-purple: 0 0 15px rgba(139, 92, 246, 0.25),
+              0 0 30px rgba(139, 92, 246, 0.1);
+
+$glow-cyan: 0 0 15px rgba(34, 211, 238, 0.25),
+            0 0 30px rgba(34, 211, 238, 0.1);
+
+$glow-green: 0 0 15px rgba(52, 211, 153, 0.25),
+             0 0 30px rgba(52, 211, 153, 0.1);
+
+$shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4),
+              0 0 1px rgba(56, 189, 248, 0.1);
+
+$shadow-elevated: 0 8px 40px rgba(0, 0, 0, 0.5),
+                  0 0 1px rgba(56, 189, 248, 0.15);
+
+// ---- Layout ----
+$max-width: 1280px;
+$border-radius-sm: 6px;
+$border-radius: 12px;
+$border-radius-lg: 16px;
+$border-radius-xl: 24px;
+$spacing-unit: 8px;
+
+// ---- Breakpoints ----
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// ---- Transitions ----
+$transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// ---- Fonts ----
+$font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+            sans-serif;
+$font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+$font-display: 'Space Grotesk', $font-sans;
+
+$font-size-xs: 0.75rem;    // 12px
+$font-size-sm: 0.875rem;   // 14px
+$font-size-base: 1rem;     // 16px
+$font-size-lg: 1.125rem;   // 18px
+$font-size-xl: 1.25rem;    // 20px
+$font-size-2xl: 1.5rem;    // 24px
+$font-size-3xl: 1.875rem;  // 30px
+$font-size-4xl: 2.25rem;   // 36px
+
+$line-height-tight: 1.25;
+$line-height-base: 1.5;
+$line-height-relaxed: 1.75;
+
+// ---- Z-Index Scale ----
+$z-base: 1;
+$z-dropdown: 10;
+$z-sticky: 20;
+$z-overlay: 30;
+$z-modal: 40;
+$z-toast: 50;
+
+// ============================================================
+// Mixins
+// ============================================================
+
+// Glass morphism card effect
+@mixin glass-card($blur: 12px) {
+  background: $bg-card;
+  border: 1px solid $border-subtle;
+  border-radius: $border-radius;
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+  box-shadow: $shadow-card;
+}
+
+// Glow border effect
+@mixin glow-border($color: $color-blue, $intensity: 0.3) {
+  box-shadow: 0 0 10px rgba($color, $intensity * 0.6),
+              0 0 25px rgba($color, $intensity * 0.3),
+              inset 0 0 1px rgba($color, $intensity * 0.5);
+  border-color: rgba($color, $intensity);
+}
+
+// Gradient text
+@mixin text-gradient($from: $color-blue, $to: $color-purple) {
+  background: linear-gradient(135deg, $from, $to);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+// Responsive breakpoints
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == sm {
+    @media (min-width: $breakpoint-sm) { @content; }
+  } @else if $breakpoint == md {
+    @media (min-width: $breakpoint-md) { @content; }
+  } @else if $breakpoint == lg {
+    @media (min-width: $breakpoint-lg) { @content; }
+  } @else if $breakpoint == xl {
+    @media (min-width: $breakpoint-xl) { @content; }
+  } @else if $breakpoint == 2xl {
+    @media (min-width: $breakpoint-2xl) { @content; }
+  }
+}
+
+// Truncate text
+@mixin truncate($lines: 1) {
+  @if $lines == 1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// Flex center
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Flex between
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Hover glow effect
+@mixin hover-glow($color: $color-blue) {
+  transition: box-shadow $transition-base, border-color $transition-base;
+
+  &:hover {
+    box-shadow: 0 0 20px rgba($color, 0.2),
+                0 0 40px rgba($color, 0.08);
+    border-color: rgba($color, 0.3);
+  }
+}
