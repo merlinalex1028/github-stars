@@ -14,8 +14,16 @@ jobs:
     steps:
       - name: Trigger sync endpoint
         run: |
+          SYNC_URL="${{ secrets.SYNC_URL }}"
+          SYNC_URL="${SYNC_URL%/}"
+          if [[ "$SYNC_URL" != */api/sync ]]; then
+            SYNC_URL="$SYNC_URL/api/sync"
+          fi
+
+          echo "Triggering sync endpoint: ${SYNC_URL#https://}"
+
           HTTP_STATUS=$(curl -s -o /tmp/response.txt -w "%{http_code}" \
-            -X POST "${{ secrets.SYNC_URL }}" \
+            -X POST "$SYNC_URL" \
             -H "Authorization: Bearer ${{ secrets.SYNC_SECRET }}" \
             -H "Content-Type: application/json" \
             --max-time 30 \
