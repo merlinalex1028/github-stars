@@ -14,11 +14,12 @@ jobs:
     steps:
       - name: Trigger sync endpoint
         run: |
-          SYNC_URL="${{ secrets.SYNC_URL }}"
-          SYNC_URL="${SYNC_URL%/}"
-          if [[ "$SYNC_URL" != */api/sync ]]; then
-            SYNC_URL="$SYNC_URL/api/sync"
-          fi
+          SYNC_URL="$(printf '%s' "${{ secrets.SYNC_URL }}" | tr -d '[:space:]')"
+          SYNC_URL="${SYNC_URL%/api/sync}"
+          while [[ "$SYNC_URL" == */ ]]; do
+            SYNC_URL="${SYNC_URL%/}"
+          done
+          SYNC_URL="$SYNC_URL/api/sync"
 
           echo "Triggering sync endpoint: ${SYNC_URL#https://}"
 
