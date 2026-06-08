@@ -29,6 +29,7 @@
 - **GitHub 账号** — 仓库需要托管在 GitHub 上才能使用 Git 集成部署
 - **Cloudflare 账号** — 免费注册：[dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up)
 - **Node.js 18+** — 本地开发需要
+- **pnpm** — 包管理器，安装：`npm install -g pnpm` 或 `corepack enable`
 - **GitHub Personal Access Token** — 每日同步任务需要调用 GitHub API
   - 前往 [github.com/settings/tokens](https://github.com/settings/tokens)
   - 点击 **Generate new token (classic)**
@@ -45,29 +46,29 @@
 
 ```bash
 cd gitpulse
-npm install
+pnpm install
 ```
 
 ### 2.2 启动开发服务器
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 浏览器访问 `http://localhost:5173` 即可看到页面。
 
 **说明：** 本地开发时，API 接口会自动使用 mock 数据（无需数据库），所有页面和功能都可以正常预览。
 
-### 2.3 可用的 npm 脚本
+### 2.3 可用的 pnpm 脚本
 
 | 命令 | 说明 |
 |------|------|
-| `npm run dev` | 启动 Vite 开发服务器（热更新） |
-| `npm run build` | 构建生产版本到 `dist/` 目录 |
-| `npm run preview` | 本地预览构建后的生产版本 |
-| `npm run deploy` | 构建并部署到 Cloudflare Pages |
-| `npm run db:init` | 初始化本地 D1 数据库表结构 |
-| `npm run db:seed` | 向本地 D1 数据库写入测试数据 |
+| `pnpm dev` | 启动 Vite 开发服务器（热更新） |
+| `pnpm build` | 构建生产版本到 `dist/` 目录 |
+| `pnpm preview` | 本地预览构建后的生产版本 |
+| `pnpm deploy` | 构建并部署到 Cloudflare Pages |
+| `pnpm db:init` | 初始化本地 D1 数据库表结构 |
+| `pnpm db:seed` | 向本地 D1 数据库写入测试数据 |
 
 ### 2.4 本地测试 Pages Functions（可选）
 
@@ -75,10 +76,10 @@ npm run dev
 
 ```bash
 # 先构建前端
-npm run build
+pnpm build
 
 # 使用 Wrangler 启动本地 Pages 环境（含 D1）
-npx wrangler pages dev dist --d1 DB=gitpulse-db
+pnpm exec wrangler pages dev dist --d1 DB=gitpulse-db
 ```
 
 这会同时启动前端静态文件和后端 API，模拟真实的 Cloudflare Pages 环境。
@@ -129,7 +130,7 @@ git push -u origin main
    |--------|-----|
    | **Production branch** | `main` |
    | **Framework preset** | `Vue` |
-   | **Build command** | `npm run build` |
+   | **Build command** | `pnpm build` |
    | **Build output directory** | `dist` |
 
 10. 点击 **Save and Deploy**
@@ -436,7 +437,7 @@ git push origin main
 构建命令包含 `vue-tsc --noEmit` 类型检查。如果构建失败：
 
 - 在 Cloudflare Dashboard 查看构建日志中的具体 TypeScript 错误
-- 本地执行 `npm run build` 复现并修复问题
+- 本地执行 `pnpm build` 复现并修复问题
 
 ### API 返回 mock 数据而不是真实数据
 
@@ -492,10 +493,10 @@ Cloudflare Pages 免费套餐包含：
 
 ### 本地开发没有 D1 数据库
 
-执行 `npm run dev` 时没有 D1 数据库，API 会自动回退到 mock 数据，UI 可以完整预览。
+执行 `pnpm dev` 时没有 D1 数据库，API 会自动回退到 mock 数据，UI 可以完整预览。
 
 如果需要本地测试真实 D1：
 
 1. 在 `wrangler.toml` 中填入你的 D1 Database ID
-2. 构建后执行 `npx wrangler pages dev dist --d1 DB=gitpulse-db`
-3. 或使用 `npm run db:init` 通过 wrangler 初始化本地 D1 数据库
+2. 构建后执行 `pnpm exec wrangler pages dev dist --d1 DB=gitpulse-db`
+3. 或使用 `pnpm db:init` 通过 wrangler 初始化本地 D1 数据库

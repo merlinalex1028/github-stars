@@ -33,7 +33,7 @@ A real-time GitHub trending repository dashboard that tracks star growth, fork a
 ### Prerequisites
 
 - Node.js 18+
-- npm 9+
+- pnpm (`npm install -g pnpm` or `corepack enable`)
 - A Cloudflare account (free tier)
 - A GitHub Personal Access Token
 
@@ -45,7 +45,7 @@ git clone https://github.com/your-username/gitpulse.git
 cd gitpulse
 
 # Install dependencies
-npm install
+pnpm install
 
 # Copy environment variables
 cp .env.example .env
@@ -54,7 +54,7 @@ cp .env.example .env
 # GITHUB_TOKEN=ghp_xxxxxxxxxxxx
 
 # Start the dev server
-npm run dev
+pnpm dev
 ```
 
 The app runs at `http://localhost:5173`. API endpoints fall back to mock data when no D1 database is configured locally.
@@ -62,8 +62,8 @@ The app runs at `http://localhost:5173`. API endpoints fall back to mock data wh
 ### Build
 
 ```bash
-npm run build       # Type-check + Vite build
-npm run preview     # Preview the production build locally
+pnpm build       # Type-check + Vite build
+pnpm preview     # Preview the production build locally
 ```
 
 ## Project Structure

@@ -260,9 +260,10 @@ export function createTopReposBarOption(data: RepoBarItem[]): EChartsOption {
     grid: baseGrid(100, 30, 20, 30),
     tooltip: {
       ...baseTooltip('axis'),
-      formatter: (params: { name: string; value: number }[]) => {
-        const p = params[0]
-        return `${p.name}<br/>Stars: <b>${p.value.toLocaleString()}</b>`
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      formatter: (params: any) => {
+        const p = Array.isArray(params) ? params[0] : params
+        return `${p.name}<br/>Stars: <b>${(p.value as number).toLocaleString()}</b>`
       },
     },
     xAxis: baseAxis('value'),

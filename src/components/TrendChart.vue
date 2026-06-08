@@ -11,7 +11,7 @@ const props = defineProps<{
 const chartRef = ref<HTMLDivElement>()
 let chartInstance: echarts.ECharts | null = null
 
-const DARK_THEME: echarts.ThemeType = {
+const DARK_THEME: Record<string, unknown> = {
   backgroundColor: 'transparent',
   textStyle: { color: 'rgba(255,255,255,0.5)' },
   title: { textStyle: { color: 'rgba(255,255,255,0.8)' } },

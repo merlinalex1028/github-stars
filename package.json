@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.5.1",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler pages deploy dist",
+    "deploy": "pnpm build && wrangler pages deploy dist",
     "db:init": "wrangler d1 execute gitpulse-db --file=./database/schema.sql",
     "db:seed": "wrangler d1 execute gitpulse-db --file=./database/seed.sql",
     "sync": "node scripts/sync.mjs"
