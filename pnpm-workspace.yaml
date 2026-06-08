@@ -1,4 +1,5 @@
-minimum-release-age: 0
+minimumReleaseAge: 0
+trustLockfile: true
 
 allowBuilds:
   '@parcel/watcher': true
