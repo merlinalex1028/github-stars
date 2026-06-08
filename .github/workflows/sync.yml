@@ -9,7 +9,7 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: Trigger sync endpoint
@@ -23,18 +23,27 @@ jobs:
 
           echo "Triggering sync endpoint: ${SYNC_URL#https://}"
 
+          set +e
           HTTP_STATUS=$(curl -s -o /tmp/response.txt -w "%{http_code}" \
             -X POST "$SYNC_URL" \
             -H "Authorization: Bearer ${{ secrets.SYNC_SECRET }}" \
             -H "Content-Type: application/json" \
-            --max-time 30 \
+            --connect-timeout 10 \
+            --max-time 180 \
             --retry 3 \
             --retry-delay 10)
+          CURL_EXIT=$?
+          set -e
 
           echo "HTTP Status: $HTTP_STATUS"
           echo "Response:"
-          cat /tmp/response.txt
+          cat /tmp/response.txt || true
           echo ""
+
+          if [ "$CURL_EXIT" -ne 0 ]; then
+            echo "::error::curl failed with exit code $CURL_EXIT"
+            exit "$CURL_EXIT"
+          fi
 
           if [ "$HTTP_STATUS" -ne 200 ]; then
             echo "::error::Sync failed with HTTP status $HTTP_STATUS"
