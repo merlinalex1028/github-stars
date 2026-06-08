@@ -76,9 +76,10 @@ async function performSync(env: Env): Promise<SyncLog> {
         const trendScore = todayStars * 2 + todayForks + Math.max(0, rankChange) * 5
 
         await env.DB.prepare(
-          `INSERT INTO repos (full_name, owner, name, owner_avatar, description, url, stars, forks, open_issues, language, topics, license, created_at, updated_at, pushed_at, homepage, default_branch)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `INSERT INTO repos (id, full_name, owner, name, owner_avatar, description, url, stars, forks, open_issues, language, topics, license, created_at, updated_at, pushed_at, homepage, default_branch)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(full_name) DO UPDATE SET
+             id = excluded.id,
              stars = excluded.stars,
              forks = excluded.forks,
              open_issues = excluded.open_issues,
@@ -88,6 +89,7 @@ async function performSync(env: Env): Promise<SyncLog> {
              homepage = excluded.homepage,
              default_branch = excluded.default_branch`
         ).bind(
+          repoId,
           fullName,
           owner,
           name,
