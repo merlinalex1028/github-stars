@@ -5,4 +5,4 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "gitpulse-db"
-database_id = "YOUR_D1_DATABASE_ID"
+database_id = "e6d11fcf-a16c-4f1c-a9ee-2942f818bfdd"
