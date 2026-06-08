@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { StatsOverview, RepoWithTrend } from '@/types'
+
+const { t } = useI18n()
 
 const stats = ref<StatsOverview>({
   totalRepos: 0,
@@ -15,11 +18,11 @@ const topRepos = ref<RepoWithTrend[]>([])
 const loading = ref(true)
 
 const statCards = computed(() => [
-  { label: 'Total Repos', value: stats.value.totalRepos, icon: '&#9733;', color: '#6366f1' },
-  { label: 'Today Stars', value: stats.value.todayStars, icon: '&#11088;', color: '#f59e0b' },
-  { label: 'Languages', value: stats.value.languageCount, icon: '&#127760;', color: '#10b981' },
-  { label: 'AI Projects', value: stats.value.aiProjectCount, icon: '&#129302;', color: '#8b5cf6' },
-  { label: 'Top Language', value: stats.value.topLanguage, icon: '&#128187;', color: '#ec4899', isText: true },
+  { label: t('dashboard.totalRepos'), value: stats.value.totalRepos, icon: '&#9733;', color: '#4f6df5' },
+  { label: t('dashboard.todayStars'), value: stats.value.todayStars, icon: '&#11088;', color: '#d97706' },
+  { label: t('dashboard.languages'), value: stats.value.languageCount, icon: '&#127760;', color: '#059669' },
+  { label: t('dashboard.aiProjects'), value: stats.value.aiProjectCount, icon: '&#129302;', color: '#7c3aed' },
+  { label: t('dashboard.topLanguage'), value: stats.value.topLanguage, icon: '&#128187;', color: '#db2777', isText: true },
 ])
 
 onMounted(async () => {
@@ -87,7 +90,7 @@ function rankClass(change: number): string {
       <h1 class="hero__title">
         <span class="hero__glitch" data-text="GitPulse">GitPulse</span>
       </h1>
-      <p class="hero__subtitle">Real-time GitHub trending analytics &mdash; powered by data, driven by stars.</p>
+      <p class="hero__subtitle">{{ t('dashboard.heroSubtitle') }}</p>
     </section>
 
     <section class="stats-grid">
@@ -104,7 +107,7 @@ function rankClass(change: number): string {
     </section>
 
     <section class="top-repos glass">
-      <h2 class="section-title">Top 10 Trending Repos</h2>
+      <h2 class="section-title">{{ t('dashboard.topReposTitle') }}</h2>
       <div v-if="loading" class="skeleton-list">
         <div v-for="i in 5" :key="i" class="skeleton-row" />
       </div>
@@ -128,13 +131,13 @@ function rankClass(change: number): string {
 
     <section class="charts-row">
       <div class="chart-placeholder glass">
-        <h3 class="section-title">Star Trend (7 Days)</h3>
+        <h3 class="section-title">{{ t('dashboard.starTrend') }}</h3>
         <div class="chart-area">
           <div class="chart-bar" v-for="h in [40, 65, 55, 80, 70, 90, 75]" :key="h" :style="{ height: h + '%' }" />
         </div>
       </div>
       <div class="chart-placeholder glass">
-        <h3 class="section-title">Language Distribution</h3>
+        <h3 class="section-title">{{ t('dashboard.languageDistribution') }}</h3>
         <div class="chart-donut">
           <div class="donut-ring" />
         </div>
@@ -145,12 +148,12 @@ function rankClass(change: number): string {
 
 <style scoped lang="scss">
 $max-width: 1280px;
-$bg: #050816;
-$card-bg: #0B1026;
-$border: rgba(99, 102, 241, 0.15);
-$glow-primary: #6366f1;
-$text: #e2e8f0;
-$text-muted: #94a3b8;
+$bg: #f8faff;
+$card-bg: #ffffff;
+$border: rgba(99, 102, 241, 0.12);
+$glow-primary: #4f6df5;
+$text: #1e293b;
+$text-muted: #64748b;
 
 .dashboard {
   max-width: $max-width;
@@ -174,7 +177,7 @@ $text-muted: #94a3b8;
     position: relative;
     display: inline-block;
     color: transparent;
-    background: linear-gradient(135deg, $glow-primary, #a78bfa, #ec4899);
+    background: linear-gradient(135deg, $glow-primary, #7c3aed, #db2777);
     background-clip: text;
     -webkit-background-clip: text;
 
@@ -226,7 +229,9 @@ $text-muted: #94a3b8;
   border: 1px solid $border;
   border-radius: 1rem;
   backdrop-filter: blur(12px);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 1px 2px rgba(0, 0, 0, 0.06),
+              0 0 1px rgba(99, 102, 241, 0.06);
 }
 
 /* Stats Grid */
@@ -244,7 +249,7 @@ $text-muted: #94a3b8;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 0 24px rgba(99, 102, 241, 0.15);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1);
   }
 
   &__icon {
@@ -256,7 +261,6 @@ $text-muted: #94a3b8;
     font-size: 1.75rem;
     font-weight: 800;
     color: var(--glow, $glow-primary);
-    text-shadow: 0 0 12px var(--glow, $glow-primary);
   }
 
   &__label {
@@ -339,7 +343,7 @@ $text-muted: #94a3b8;
 
   &__stars {
     font-size: 0.85rem;
-    color: #f59e0b;
+    color: #d97706;
     white-space: nowrap;
   }
 
@@ -351,8 +355,8 @@ $text-muted: #94a3b8;
   }
 }
 
-.rank-up { color: #10b981; }
-.rank-down { color: #ef4444; }
+.rank-up { color: #059669; }
+.rank-down { color: #dc2626; }
 .rank-same { color: $text-muted; }
 
 /* Skeleton */
@@ -365,7 +369,7 @@ $text-muted: #94a3b8;
 .skeleton-row {
   height: 3rem;
   border-radius: 0.5rem;
-  background: linear-gradient(90deg, $border 25%, rgba(99, 102, 241, 0.08) 50%, $border 75%);
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -397,9 +401,9 @@ $text-muted: #94a3b8;
 
 .chart-bar {
   flex: 1;
-  background: linear-gradient(180deg, $glow-primary 0%, rgba(99, 102, 241, 0.2) 100%);
+  background: linear-gradient(180deg, $glow-primary 0%, rgba(79, 109, 245, 0.15) 100%);
   border-radius: 0.375rem 0.375rem 0 0;
-  box-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 1px 4px rgba(79, 109, 245, 0.15);
   transition: height 0.5s ease;
 }
 
@@ -416,10 +420,10 @@ $text-muted: #94a3b8;
   border-radius: 50%;
   border: 24px solid transparent;
   border-top-color: $glow-primary;
-  border-right-color: #a78bfa;
-  border-bottom-color: #ec4899;
-  border-left-color: #10b981;
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+  border-right-color: #7c3aed;
+  border-bottom-color: #db2777;
+  border-left-color: #059669;
+  box-shadow: 0 2px 8px rgba(79, 109, 245, 0.1);
 }
 
 /* Responsive */

@@ -1,5 +1,5 @@
 // ============================================================
-// GitPulse Dark Sci-Fi Theme - Global Styles
+// GitPulse Light Sci-Fi Theme - Global Styles
 // ============================================================
 
 @use 'variables' as *;
@@ -35,7 +35,7 @@ body {
 }
 
 // ============================================================
-// Grid Background Pattern (subtle dots)
+// Grid Background Pattern (very light blue dots)
 // ============================================================
 
 body::before {
@@ -48,7 +48,7 @@ body::before {
   pointer-events: none;
   z-index: 0;
   background-image:
-    radial-gradient(circle, rgba(56, 189, 248, 0.06) 1px, transparent 1px);
+    radial-gradient(circle, rgba(99, 102, 241, 0.04) 1px, transparent 1px);
   background-size: 32px 32px;
   mask-image: radial-gradient(
     ellipse 80% 60% at 50% 30%,
@@ -63,7 +63,7 @@ body::before {
 }
 
 // ============================================================
-// Dark Scrollbar
+// Light Scrollbar
 // ============================================================
 
 ::-webkit-scrollbar {
@@ -76,12 +76,12 @@ body::before {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.2);
+  background: rgba(99, 102, 241, 0.15);
   border-radius: 4px;
   transition: background $transition-fast;
 
   &:hover {
-    background: rgba(56, 189, 248, 0.35);
+    background: rgba(99, 102, 241, 0.28);
   }
 }
 
@@ -92,7 +92,7 @@ body::before {
 // Firefox
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(56, 189, 248, 0.2) $bg-secondary;
+  scrollbar-color: rgba(99, 102, 241, 0.15) $bg-secondary;
 }
 
 // ============================================================
@@ -105,7 +105,7 @@ a {
   transition: color $transition-fast;
 
   &:hover {
-    color: $color-cyan;
+    color: $color-purple;
   }
 }
 
@@ -135,7 +135,7 @@ select {
 
   &:focus {
     border-color: rgba($color-blue, 0.5);
-    box-shadow: 0 0 0 3px rgba($color-blue, 0.1);
+    box-shadow: 0 0 0 3px rgba($color-blue, 0.08);
   }
 }
 
@@ -151,7 +151,7 @@ ol {
 }
 
 // ============================================================
-// Glass Card Base Class
+// Card Base Class
 // ============================================================
 
 .glass-card {
@@ -275,7 +275,7 @@ ol {
 }
 
 // ============================================================
-// Glow Button Base
+// Button Base (light theme)
 // ============================================================
 
 .btn-glow {
@@ -300,45 +300,45 @@ ol {
   }
 
   &--blue {
-    background: rgba($color-blue, 0.12);
-    border: 1px solid rgba($color-blue, 0.3);
+    background: rgba($color-blue, 0.08);
+    border: 1px solid rgba($color-blue, 0.2);
     color: $color-blue;
 
     &:hover {
-      background: rgba($color-blue, 0.2);
+      background: rgba($color-blue, 0.14);
       @include glow-border($color-blue, 0.25);
     }
   }
 
   &--purple {
-    background: rgba($color-purple, 0.12);
-    border: 1px solid rgba($color-purple, 0.3);
+    background: rgba($color-purple, 0.08);
+    border: 1px solid rgba($color-purple, 0.2);
     color: $color-purple;
 
     &:hover {
-      background: rgba($color-purple, 0.2);
+      background: rgba($color-purple, 0.14);
       @include glow-border($color-purple, 0.25);
     }
   }
 
   &--cyan {
-    background: rgba($color-cyan, 0.12);
-    border: 1px solid rgba($color-cyan, 0.3);
+    background: rgba($color-cyan, 0.08);
+    border: 1px solid rgba($color-cyan, 0.2);
     color: $color-cyan;
 
     &:hover {
-      background: rgba($color-cyan, 0.2);
+      background: rgba($color-cyan, 0.14);
       @include glow-border($color-cyan, 0.25);
     }
   }
 
   &--green {
-    background: rgba($color-green, 0.12);
-    border: 1px solid rgba($color-green, 0.3);
+    background: rgba($color-green, 0.08);
+    border: 1px solid rgba($color-green, 0.2);
     color: $color-green;
 
     &:hover {
-      background: rgba($color-green, 0.2);
+      background: rgba($color-green, 0.14);
       @include glow-border($color-green, 0.25);
     }
   }

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { RepoWithTrend, TimeRange, SortBy, PaginatedResponse } from '@/types'
+
+const { t } = useI18n()
 
 const timeRange = ref<TimeRange>('today')
 const selectedLanguage = ref('')
@@ -14,20 +17,20 @@ const repos = ref<RepoWithTrend[]>([])
 const totalPages = ref(1)
 const total = ref(0)
 
-const timeRanges: { label: string; value: TimeRange }[] = [
-  { label: 'Today', value: 'today' },
-  { label: 'Weekly', value: 'weekly' },
-  { label: 'Monthly', value: 'monthly' },
-]
+const timeRanges = computed<{ label: string; value: TimeRange }[]>(() => [
+  { label: t('trending.today'), value: 'today' },
+  { label: t('trending.weekly'), value: 'weekly' },
+  { label: t('trending.monthly'), value: 'monthly' },
+])
 
-const sortOptions: { label: string; value: SortBy }[] = [
-  { label: 'Trend Score', value: 'trend_score' },
-  { label: 'Today Stars', value: 'today_stars' },
-  { label: 'Total Stars', value: 'stars' },
-  { label: 'Forks', value: 'forks' },
-  { label: 'Recently Pushed', value: 'pushed_at' },
-  { label: 'Newest', value: 'created_at' },
-]
+const sortOptions = computed<{ label: string; value: SortBy }[]>(() => [
+  { label: t('trending.trendScore'), value: 'trend_score' },
+  { label: t('trending.todayStars'), value: 'today_stars' },
+  { label: t('trending.totalStars'), value: 'stars' },
+  { label: t('trending.forks'), value: 'forks' },
+  { label: t('trending.recentlyPushed'), value: 'pushed_at' },
+  { label: t('trending.newest'), value: 'created_at' },
+])
 
 const languages = ['TypeScript', 'Python', 'Rust', 'Go', 'Java', 'C++', 'JavaScript', 'Swift']
 const topics = ['machine-learning', 'web-framework', 'cli', 'database', 'devtools', 'ai', 'llm', 'rust']
@@ -121,7 +124,7 @@ const visiblePages = computed(() => {
 
 <template>
   <div class="trending">
-    <h1 class="page-title">Trending Repositories</h1>
+    <h1 class="page-title">{{ t('trending.pageTitle') }}</h1>
 
     <!-- Controls -->
     <div class="controls glass">
@@ -143,13 +146,13 @@ const visiblePages = computed(() => {
           <input
             type="text"
             class="search-box__input"
-            placeholder="Search repositories..."
+            :placeholder="t('trending.searchPlaceholder')"
             @input="onSearchInput"
           />
         </div>
 
         <div class="sort-select">
-          <label class="sort-select__label">Sort:</label>
+          <label class="sort-select__label">{{ t('trending.sortLabel') }}</label>
           <select v-model="sortBy" class="sort-select__dropdown">
             <option v-for="opt in sortOptions" :key="opt.value" :value="opt.value">
               {{ opt.label }}
@@ -160,7 +163,7 @@ const visiblePages = computed(() => {
 
       <div class="controls__row">
         <div class="filter-group">
-          <span class="filter-group__label">Language:</span>
+          <span class="filter-group__label">{{ t('trending.languageLabel') }}</span>
           <div class="chip-row">
             <button
               v-for="lang in languages"
@@ -177,7 +180,7 @@ const visiblePages = computed(() => {
 
       <div class="controls__row">
         <div class="filter-group">
-          <span class="filter-group__label">Topics:</span>
+          <span class="filter-group__label">{{ t('trending.topicsLabel') }}</span>
           <div class="chip-row">
             <button
               v-for="topic in topics"
@@ -195,7 +198,7 @@ const visiblePages = computed(() => {
 
     <!-- Results info -->
     <div class="results-info" v-if="!loading">
-      <span>{{ total }} repositories found</span>
+      <span>{{ t('trending.resultsFound', { total }) }}</span>
     </div>
 
     <!-- Loading -->
@@ -206,9 +209,9 @@ const visiblePages = computed(() => {
     <!-- Empty State -->
     <div v-else-if="repos.length === 0" class="empty-state glass">
       <div class="empty-state__icon">&#128270;</div>
-      <p class="empty-state__text">No repositories match your filters.</p>
+      <p class="empty-state__text">{{ t('trending.emptyTitle') }}</p>
       <button class="empty-state__btn" @click="selectedLanguage = ''; selectedTopic = ''; searchQuery = ''">
-        Clear Filters
+        {{ t('trending.clearFilters') }}
       </button>
     </div>
 
@@ -230,10 +233,10 @@ const visiblePages = computed(() => {
           <span class="meta-item meta-item--stars">&#9733; {{ formatNumber(repo.stars) }}</span>
           <span class="meta-item">&#9681; {{ formatNumber(repo.forks) }}</span>
           <span class="meta-item">{{ repo.language }}</span>
-          <span class="meta-item meta-item--score">Score: {{ repo.trendScore.toFixed(1) }}</span>
+          <span class="meta-item meta-item--score">{{ t('trending.scoreLabel') }}: {{ repo.trendScore.toFixed(1) }}</span>
         </div>
         <div class="repo-card__today">
-          <span class="today-stars">+{{ formatNumber(repo.todayStars) }} stars today</span>
+          <span class="today-stars">{{ t('trending.starsToday', { count: formatNumber(repo.todayStars) }) }}</span>
         </div>
       </article>
     </div>
@@ -241,7 +244,7 @@ const visiblePages = computed(() => {
     <!-- Pagination -->
     <nav v-if="totalPages > 1" class="pagination">
       <button class="page-btn" :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)">
-        &laquo; Prev
+        &laquo; {{ t('trending.prev') }}
       </button>
       <button
         v-for="p in visiblePages"
@@ -253,7 +256,7 @@ const visiblePages = computed(() => {
         {{ p }}
       </button>
       <button class="page-btn" :disabled="currentPage >= totalPages" @click="goToPage(currentPage + 1)">
-        Next &raquo;
+        {{ t('trending.next') }} &raquo;
       </button>
     </nav>
   </div>
@@ -261,12 +264,12 @@ const visiblePages = computed(() => {
 
 <style scoped lang="scss">
 $max-width: 1280px;
-$bg: #050816;
-$card-bg: #0B1026;
-$border: rgba(99, 102, 241, 0.15);
-$glow: #6366f1;
-$text: #e2e8f0;
-$text-muted: #94a3b8;
+$bg: #f8faff;
+$card-bg: #ffffff;
+$border: rgba(99, 102, 241, 0.12);
+$glow: #4f6df5;
+$text: #1e293b;
+$text-muted: #64748b;
 
 .trending {
   max-width: $max-width;
@@ -278,7 +281,7 @@ $text-muted: #94a3b8;
   font-size: 2rem;
   font-weight: 800;
   margin: 0 0 1.5rem;
-  background: linear-gradient(135deg, $glow, #a78bfa);
+  background: linear-gradient(135deg, $glow, #7c3aed);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
@@ -288,8 +291,9 @@ $text-muted: #94a3b8;
   background: $card-bg;
   border: 1px solid $border;
   border-radius: 1rem;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 1px 2px rgba(0, 0, 0, 0.06),
+              0 0 1px rgba(99, 102, 241, 0.06);
 }
 
 /* Controls */
@@ -311,7 +315,7 @@ $text-muted: #94a3b8;
 .date-tabs {
   display: flex;
   gap: 0.25rem;
-  background: rgba(99, 102, 241, 0.08);
+  background: rgba(99, 102, 241, 0.06);
   border-radius: 0.625rem;
   padding: 0.25rem;
 }
@@ -329,7 +333,7 @@ $text-muted: #94a3b8;
   &.active {
     background: $glow;
     color: #fff;
-    box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 2px 8px rgba(79, 109, 245, 0.25);
   }
 
   &:hover:not(.active) {
@@ -356,7 +360,7 @@ $text-muted: #94a3b8;
     padding: 0.6rem 0.75rem 0.6rem 2.25rem;
     border: 1px solid $border;
     border-radius: 0.5rem;
-    background: rgba(5, 8, 22, 0.6);
+    background: #f8fafc;
     color: $text;
     font-size: 0.9rem;
     outline: none;
@@ -364,7 +368,7 @@ $text-muted: #94a3b8;
 
     &:focus {
       border-color: $glow;
-      box-shadow: 0 0 8px rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 0 3px rgba(79, 109, 245, 0.08);
     }
 
     &::placeholder {
@@ -388,7 +392,7 @@ $text-muted: #94a3b8;
     padding: 0.5rem 0.75rem;
     border: 1px solid $border;
     border-radius: 0.5rem;
-    background: rgba(5, 8, 22, 0.6);
+    background: #f8fafc;
     color: $text;
     font-size: 0.85rem;
     outline: none;
@@ -432,22 +436,22 @@ $text-muted: #94a3b8;
   white-space: nowrap;
 
   &.active {
-    background: rgba(99, 102, 241, 0.2);
+    background: rgba(79, 109, 245, 0.1);
     border-color: $glow;
     color: $glow;
-    box-shadow: 0 0 8px rgba(99, 102, 241, 0.15);
+    box-shadow: 0 1px 4px rgba(79, 109, 245, 0.1);
   }
 
   &:hover:not(.active) {
-    border-color: rgba(99, 102, 241, 0.3);
+    border-color: rgba(79, 109, 245, 0.25);
     color: $text;
   }
 
   &--topic.active {
-    background: rgba(236, 72, 153, 0.15);
-    border-color: #ec4899;
-    color: #ec4899;
-    box-shadow: 0 0 8px rgba(236, 72, 153, 0.15);
+    background: rgba(219, 39, 119, 0.08);
+    border-color: #db2777;
+    color: #db2777;
+    box-shadow: 0 1px 4px rgba(219, 39, 119, 0.1);
   }
 }
 
@@ -467,7 +471,7 @@ $text-muted: #94a3b8;
 .skeleton-card {
   height: 200px;
   border-radius: 1rem;
-  background: linear-gradient(90deg, $border 25%, rgba(99, 102, 241, 0.08) 50%, $border 75%);
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -505,7 +509,7 @@ $text-muted: #94a3b8;
     transition: all 0.2s;
 
     &:hover {
-      background: rgba(99, 102, 241, 0.15);
+      background: rgba(79, 109, 245, 0.08);
     }
   }
 }
@@ -524,7 +528,7 @@ $text-muted: #94a3b8;
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 0 24px rgba(99, 102, 241, 0.12);
+    box-shadow: 0 4px 16px rgba(79, 109, 245, 0.1);
   }
 
   &__header {
@@ -589,13 +593,13 @@ $text-muted: #94a3b8;
   padding: 0.15rem 0.5rem;
   border-radius: 999px;
   font-size: 0.7rem;
-  background: rgba(139, 92, 246, 0.12);
-  color: #a78bfa;
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(124, 58, 237, 0.08);
+  color: #7c3aed;
+  border: 1px solid rgba(124, 58, 237, 0.15);
 }
 
 .meta-item--stars {
-  color: #f59e0b;
+  color: #d97706;
 }
 
 .meta-item--score {
@@ -604,13 +608,13 @@ $text-muted: #94a3b8;
 }
 
 .today-stars {
-  color: #10b981;
+  color: #059669;
   font-size: 0.82rem;
   font-weight: 600;
 }
 
-.trend-up { color: #10b981; }
-.trend-down { color: #ef4444; }
+.trend-up { color: #059669; }
+.trend-down { color: #dc2626; }
 .trend-same { color: $text-muted; }
 
 /* Pagination */
@@ -635,7 +639,7 @@ $text-muted: #94a3b8;
     background: $glow;
     color: #fff;
     border-color: $glow;
-    box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 2px 8px rgba(79, 109, 245, 0.2);
   }
 
   &:hover:not(.active):not(:disabled) {

@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import type { TopicStat } from '@/types'
 
+const { t } = useI18n()
 const router = useRouter()
 const loading = ref(true)
 const topics = ref<TopicStat[]>([])
 
 const COLORS = [
-  '#6366f1', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6',
-  '#06b6d4', '#ef4444', '#84cc16', '#f97316', '#14b8a6',
-  '#a78bfa', '#e879f9', '#facc15', '#38bdf8', '#fb7185',
-  '#34d399', '#fbbf24', '#c084fc', '#22d3ee', '#a3e635',
+  '#4f6df5', '#db2777', '#059669', '#d97706', '#7c3aed',
+  '#0891b2', '#dc2626', '#65a30d', '#ea580c', '#0d9488',
+  '#8b5cf6', '#c026d3', '#ca8a04', '#0284c7', '#e11d48',
+  '#059669', '#d97706', '#9333ea', '#0891b2', '#84cc16',
 ]
 
 function formatNumber(n: number): string {
@@ -41,10 +43,10 @@ function heatIntensity(todayStars: number): number {
 }
 
 function heatColor(intensity: number): string {
-  const r = Math.round(99 + (236 - 99) * intensity)
-  const g = Math.round(102 - 102 * intensity)
-  const b = Math.round(241 - 91 * intensity)
-  const a = 0.15 + intensity * 0.55
+  const r = Math.round(79 + (219 - 79) * intensity)
+  const g = Math.round(109 - 69 * intensity)
+  const b = Math.round(245 - 187 * intensity)
+  const a = 0.08 + intensity * 0.22
   return `rgba(${r}, ${g}, ${b}, ${a})`
 }
 
@@ -76,7 +78,7 @@ onMounted(async () => {
 
 <template>
   <div class="topics">
-    <h1 class="page-title">Topic Analytics</h1>
+    <h1 class="page-title">{{ t('topics.pageTitle') }}</h1>
 
     <!-- Loading -->
     <div v-if="loading" class="skeleton-grid">
@@ -86,7 +88,7 @@ onMounted(async () => {
     <template v-else>
       <!-- Heatmap -->
       <div class="heatmap-section glass">
-        <h2 class="section-title">Activity Heatmap (Today's Stars)</h2>
+        <h2 class="section-title">{{ t('topics.heatmapTitle') }}</h2>
         <div class="heatmap-grid">
           <div
             v-for="topic in topics"
@@ -96,7 +98,7 @@ onMounted(async () => {
               background: heatColor(heatIntensity(topic.todayStars)),
               '--size': (0.6 + heatIntensity(topic.todayStars) * 0.4),
             }"
-            :title="`${topic.topic}: +${formatNumber(topic.todayStars)} today`"
+            :title="`${topic.topic}: +${formatNumber(topic.todayStars)}`"
             @click="navigateToTopic(topic.topic)"
           >
             <span class="heatmap-cell__label">{{ topic.topic }}</span>
@@ -104,9 +106,9 @@ onMounted(async () => {
           </div>
         </div>
         <div class="heatmap-legend">
-          <span class="heatmap-legend__label">Low</span>
+          <span class="heatmap-legend__label">{{ t('topics.low') }}</span>
           <div class="heatmap-legend__bar" />
-          <span class="heatmap-legend__label">High</span>
+          <span class="heatmap-legend__label">{{ t('topics.high') }}</span>
         </div>
       </div>
 
@@ -134,20 +136,20 @@ onMounted(async () => {
           <div class="topic-card__stats">
             <div class="topic-card__stat">
               <span class="topic-card__stat-value">{{ formatNumber(topic.totalStars) }}</span>
-              <span class="topic-card__stat-label">Stars</span>
+              <span class="topic-card__stat-label">{{ t('topics.stars') }}</span>
             </div>
             <div class="topic-card__stat">
               <span class="topic-card__stat-value">{{ formatNumber(topic.repoCount) }}</span>
-              <span class="topic-card__stat-label">Repos</span>
+              <span class="topic-card__stat-label">{{ t('topics.repos') }}</span>
             </div>
             <div class="topic-card__stat">
               <span class="topic-card__stat-value">+{{ formatNumber(topic.todayStars) }}</span>
-              <span class="topic-card__stat-label">Today</span>
+              <span class="topic-card__stat-label">{{ t('topics.today') }}</span>
             </div>
           </div>
 
           <div class="topic-card__trend" :class="trendClass(topic.trendChange)">
-            {{ trendLabel(topic.trendChange) }} this week
+            {{ trendLabel(topic.trendChange) }} {{ t('topics.thisWeek') }}
           </div>
         </article>
       </div>
@@ -157,12 +159,12 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 $max-width: 1280px;
-$bg: #050816;
-$card-bg: #0B1026;
-$border: rgba(99, 102, 241, 0.15);
-$glow: #6366f1;
-$text: #e2e8f0;
-$text-muted: #94a3b8;
+$bg: #f8faff;
+$card-bg: #ffffff;
+$border: rgba(99, 102, 241, 0.12);
+$glow: #4f6df5;
+$text: #1e293b;
+$text-muted: #64748b;
 
 .topics {
   max-width: $max-width;
@@ -174,7 +176,7 @@ $text-muted: #94a3b8;
   font-size: 2rem;
   font-weight: 800;
   margin: 0 0 1.5rem;
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  background: linear-gradient(135deg, #db2777, #7c3aed);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
@@ -184,8 +186,9 @@ $text-muted: #94a3b8;
   background: $card-bg;
   border: 1px solid $border;
   border-radius: 1rem;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 1px 2px rgba(0, 0, 0, 0.06),
+              0 0 1px rgba(99, 102, 241, 0.06);
 }
 
 .section-title {
@@ -205,7 +208,7 @@ $text-muted: #94a3b8;
 .skeleton-card {
   height: 180px;
   border-radius: 1rem;
-  background: linear-gradient(90deg, $border 25%, rgba(99, 102, 241, 0.08) 50%, $border 75%);
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -237,8 +240,8 @@ $text-muted: #94a3b8;
 
   &:hover {
     transform: scale(1.04);
-    border-color: rgba(99, 102, 241, 0.3);
-    box-shadow: 0 0 16px rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.2);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
   }
 
   &__label {
@@ -275,7 +278,7 @@ $text-muted: #94a3b8;
     width: 120px;
     height: 8px;
     border-radius: 4px;
-    background: linear-gradient(90deg, rgba(99, 102, 241, 0.15), rgba(236, 72, 153, 0.7));
+    background: linear-gradient(90deg, rgba(79, 109, 245, 0.1), rgba(219, 39, 119, 0.4));
   }
 }
 
@@ -293,7 +296,7 @@ $text-muted: #94a3b8;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 0 24px rgba(99, 102, 241, 0.12);
+    box-shadow: 0 4px 16px rgba(79, 109, 245, 0.1);
     border-color: var(--accent, $glow);
   }
 
@@ -309,7 +312,7 @@ $text-muted: #94a3b8;
     height: 10px;
     border-radius: 50%;
     background: var(--accent, $glow);
-    box-shadow: 0 0 8px var(--accent, $glow);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
   }
 
   &__name {
@@ -321,7 +324,7 @@ $text-muted: #94a3b8;
 
   &__bar-wrap {
     height: 4px;
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(99, 102, 241, 0.06);
     border-radius: 2px;
     margin-bottom: 0.75rem;
     overflow: hidden;
@@ -330,7 +333,7 @@ $text-muted: #94a3b8;
   &__bar {
     height: 100%;
     border-radius: 2px;
-    background: linear-gradient(90deg, var(--accent, $glow), rgba(167, 139, 250, 0.6));
+    background: linear-gradient(90deg, var(--accent, $glow), rgba(139, 92, 246, 0.5));
     transition: width 0.5s ease;
   }
 
@@ -366,8 +369,8 @@ $text-muted: #94a3b8;
   }
 }
 
-.trend-up { color: #10b981; }
-.trend-down { color: #ef4444; }
+.trend-up { color: #059669; }
+.trend-down { color: #dc2626; }
 .trend-same { color: $text-muted; }
 
 @media (max-width: 640px) {

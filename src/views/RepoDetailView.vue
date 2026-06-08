@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import type { GithubRepo, RepoTrendSnapshot } from '@/types'
 
+const { t } = useI18n()
 const route = useRoute()
 const loading = ref(true)
 const repo = ref<GithubRepo | null>(null)
 const snapshots = ref<RepoTrendSnapshot[]>([])
 
-const breadcrumbs = [
-  { label: 'Dashboard', to: '/' },
-  { label: 'Trending', to: '/trending' },
-]
+const breadcrumbs = computed(() => [
+  { label: t('repoDetail.dashboard'), to: '/' },
+  { label: t('repoDetail.trending'), to: '/trending' },
+])
 
 function formatNumber(n: number): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
@@ -88,7 +90,7 @@ const maxStarHeight = () => {
         {{ crumb.label }}
       </router-link>
       <span class="breadcrumb__sep">/</span>
-      <span class="breadcrumb__current">{{ repo?.fullName || 'Loading...' }}</span>
+      <span class="breadcrumb__current">{{ repo?.fullName || t('repoDetail.loading') }}</span>
     </nav>
 
     <!-- Loading -->
@@ -115,40 +117,40 @@ const maxStarHeight = () => {
 
         <div class="repo-header__meta">
           <span v-if="repo.license" class="meta-badge">&#128220; {{ repo.license }}</span>
-          <span class="meta-badge">&#128197; Created {{ repo.createdAt }}</span>
+          <span class="meta-badge">&#128197; {{ t('repoDetail.created', { date: repo.createdAt }) }}</span>
           <span v-if="repo.homepage" class="meta-badge">
-            <a :href="repo.homepage" target="_blank" rel="noopener">&#127760; Website</a>
+            <a :href="repo.homepage" target="_blank" rel="noopener">&#127760; {{ t('repoDetail.website') }}</a>
           </span>
         </div>
       </header>
 
       <!-- Stats Row -->
       <div class="stats-row">
-        <div class="stat-block glass" style="--glow: #f59e0b;">
+        <div class="stat-block glass" style="--glow: #d97706;">
           <div class="stat-block__value">{{ formatNumber(repo.stars) }}</div>
-          <div class="stat-block__label">Stars</div>
+          <div class="stat-block__label">{{ t('repoDetail.stars') }}</div>
         </div>
-        <div class="stat-block glass" style="--glow: #6366f1;">
+        <div class="stat-block glass" style="--glow: #4f6df5;">
           <div class="stat-block__value">{{ formatNumber(repo.forks) }}</div>
-          <div class="stat-block__label">Forks</div>
+          <div class="stat-block__label">{{ t('repoDetail.forks') }}</div>
         </div>
-        <div class="stat-block glass" style="--glow: #ef4444;">
+        <div class="stat-block glass" style="--glow: #dc2626;">
           <div class="stat-block__value">{{ formatNumber(repo.openIssues) }}</div>
-          <div class="stat-block__label">Open Issues</div>
+          <div class="stat-block__label">{{ t('repoDetail.openIssues') }}</div>
         </div>
-        <div class="stat-block glass" style="--glow: #10b981;">
+        <div class="stat-block glass" style="--glow: #059669;">
           <div class="stat-block__value">{{ latestSnapshot()?.todayStars ?? 0 }}</div>
-          <div class="stat-block__label">Today Stars</div>
+          <div class="stat-block__label">{{ t('repoDetail.todayStars') }}</div>
         </div>
-        <div class="stat-block glass" style="--glow: #8b5cf6;">
+        <div class="stat-block glass" style="--glow: #7c3aed;">
           <div class="stat-block__value">{{ latestSnapshot()?.trendScore.toFixed(1) ?? '0' }}</div>
-          <div class="stat-block__label">Trend Score</div>
+          <div class="stat-block__label">{{ t('repoDetail.trendScore') }}</div>
         </div>
       </div>
 
       <!-- Topics -->
       <div class="topics-row glass">
-        <span class="topics-row__label">Topics:</span>
+        <span class="topics-row__label">{{ t('repoDetail.topics') }}</span>
         <router-link
           v-for="topic in repo.topics"
           :key="topic"
@@ -162,7 +164,7 @@ const maxStarHeight = () => {
       <!-- Charts -->
       <div class="charts-grid">
         <div class="chart-panel glass">
-          <h3 class="chart-panel__title">Daily Star Gains (30 Days)</h3>
+          <h3 class="chart-panel__title">{{ t('repoDetail.dailyStarGains') }} {{ t('repoDetail.daysPeriod') }}</h3>
           <div class="bar-chart">
             <div
               v-for="snap in snapshots"
@@ -180,7 +182,7 @@ const maxStarHeight = () => {
         </div>
 
         <div class="chart-panel glass">
-          <h3 class="chart-panel__title">Daily Fork Gains (30 Days)</h3>
+          <h3 class="chart-panel__title">{{ t('repoDetail.dailyForkGains') }} {{ t('repoDetail.daysPeriod') }}</h3>
           <div class="bar-chart">
             <div
               v-for="snap in snapshots"
@@ -200,13 +202,13 @@ const maxStarHeight = () => {
 
       <!-- Trend Score Line -->
       <div class="chart-panel glass">
-        <h3 class="chart-panel__title">Trend Score Over Time</h3>
+        <h3 class="chart-panel__title">{{ t('repoDetail.trendScoreOverTime') }}</h3>
         <div class="line-chart">
           <svg viewBox="0 0 600 150" preserveAspectRatio="none" class="line-chart__svg">
             <defs>
               <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#6366f1" stop-opacity="0.3" />
-                <stop offset="100%" stop-color="#6366f1" stop-opacity="0" />
+                <stop offset="0%" stop-color="#4f6df5" stop-opacity="0.15" />
+                <stop offset="100%" stop-color="#4f6df5" stop-opacity="0" />
               </linearGradient>
             </defs>
             <path
@@ -238,7 +240,7 @@ const maxStarHeight = () => {
                 return 'M' + points.join(' L')
               })()"
               fill="none"
-              stroke="#6366f1"
+              stroke="#4f6df5"
               stroke-width="2"
             />
           </svg>
@@ -250,12 +252,12 @@ const maxStarHeight = () => {
 
 <style scoped lang="scss">
 $max-width: 1280px;
-$bg: #050816;
-$card-bg: #0B1026;
-$border: rgba(99, 102, 241, 0.15);
-$glow: #6366f1;
-$text: #e2e8f0;
-$text-muted: #94a3b8;
+$bg: #f8faff;
+$card-bg: #ffffff;
+$border: rgba(99, 102, 241, 0.12);
+$glow: #4f6df5;
+$text: #1e293b;
+$text-muted: #64748b;
 
 .repo-detail {
   max-width: $max-width;
@@ -267,8 +269,9 @@ $text-muted: #94a3b8;
   background: $card-bg;
   border: 1px solid $border;
   border-radius: 1rem;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 1px 2px rgba(0, 0, 0, 0.06),
+              0 0 1px rgba(99, 102, 241, 0.06);
 }
 
 /* Breadcrumb */
@@ -309,7 +312,7 @@ $text-muted: #94a3b8;
 
 .skeleton-block {
   border-radius: 1rem;
-  background: linear-gradient(90deg, $border 25%, rgba(99, 102, 241, 0.08) 50%, $border 75%);
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 
@@ -377,14 +380,14 @@ $text-muted: #94a3b8;
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, $glow, #a78bfa);
+  background: linear-gradient(135deg, $glow, #7c3aed);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
   font-weight: 800;
   color: #fff;
-  box-shadow: 0 0 16px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 8px rgba(79, 109, 245, 0.2);
 }
 
 .meta-badge {
@@ -425,7 +428,6 @@ $text-muted: #94a3b8;
     font-size: 1.5rem;
     font-weight: 800;
     color: var(--glow, $glow);
-    text-shadow: 0 0 10px var(--glow, $glow);
   }
 
   &__label {
@@ -457,15 +459,15 @@ $text-muted: #94a3b8;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
   font-size: 0.78rem;
-  background: rgba(139, 92, 246, 0.12);
-  color: #a78bfa;
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(124, 58, 237, 0.08);
+  color: #7c3aed;
+  border: 1px solid rgba(124, 58, 237, 0.15);
   text-decoration: none;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(139, 92, 246, 0.25);
-    box-shadow: 0 0 8px rgba(139, 92, 246, 0.2);
+    background: rgba(124, 58, 237, 0.15);
+    box-shadow: 0 1px 4px rgba(124, 58, 237, 0.1);
   }
 }
 
@@ -512,13 +514,13 @@ $text-muted: #94a3b8;
     min-height: 2px;
 
     &--star {
-      background: linear-gradient(180deg, #f59e0b, rgba(245, 158, 11, 0.2));
-      box-shadow: 0 0 6px rgba(245, 158, 11, 0.3);
+      background: linear-gradient(180deg, #d97706, rgba(217, 119, 6, 0.15));
+      box-shadow: 0 1px 4px rgba(217, 119, 6, 0.2);
     }
 
     &--fork {
-      background: linear-gradient(180deg, $glow, rgba(99, 102, 241, 0.2));
-      box-shadow: 0 0 6px rgba(99, 102, 241, 0.3);
+      background: linear-gradient(180deg, $glow, rgba(79, 109, 245, 0.15));
+      box-shadow: 0 1px 4px rgba(79, 109, 245, 0.2);
     }
   }
 

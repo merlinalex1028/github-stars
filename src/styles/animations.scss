@@ -1,5 +1,5 @@
 // ============================================================
-// GitPulse Dark Sci-Fi Theme - Animations
+// GitPulse Light Sci-Fi Theme - Animations
 // ============================================================
 
 @use 'variables' as *;
@@ -55,11 +55,11 @@
 @keyframes radar-sweep {
   0% {
     transform: rotate(0deg);
-    opacity: 0.8;
+    opacity: 0.6;
   }
   100% {
     transform: rotate(360deg);
-    opacity: 0.2;
+    opacity: 0.1;
   }
 }
 
@@ -74,12 +74,12 @@
 
 @keyframes glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 8px rgba($color-blue, 0.2),
-                0 0 20px rgba($color-blue, 0.1);
+    box-shadow: 0 2px 6px rgba($color-blue, 0.1),
+                0 0 1px rgba($color-blue, 0.06);
   }
   50% {
-    box-shadow: 0 0 16px rgba($color-blue, 0.35),
-                0 0 40px rgba($color-blue, 0.15);
+    box-shadow: 0 4px 12px rgba($color-blue, 0.18),
+                0 0 1px rgba($color-blue, 0.1);
   }
 }
 
@@ -139,10 +139,10 @@
     opacity: 0;
   }
   10% {
-    opacity: 1;
+    opacity: 0.7;
   }
   90% {
-    opacity: 1;
+    opacity: 0.7;
   }
   100% {
     transform: translate(var(--tx, 20px), var(--ty, -40px)) scale(0.5);
@@ -151,7 +151,7 @@
 }
 
 // ============================================================
-// Radar Background
+// Radar Background (lighter colors)
 // ============================================================
 
 .radar-bg {
@@ -169,7 +169,7 @@
     background: conic-gradient(
       from 0deg,
       transparent 0deg,
-      rgba($color-blue, 0.04) 30deg,
+      rgba($color-blue, 0.02) 30deg,
       transparent 60deg
     );
     animation: radar-sweep 6s linear infinite;
@@ -186,8 +186,8 @@
     height: 200px;
     transform: translate(-50%, -50%);
     border-radius: 50%;
-    border: 1px solid rgba($color-blue, 0.08);
-    box-shadow: 0 0 60px rgba($color-blue, 0.03);
+    border: 1px solid rgba($color-blue, 0.06);
+    box-shadow: 0 0 40px rgba($color-blue, 0.02);
     pointer-events: none;
     z-index: 0;
   }
@@ -199,7 +199,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     border-radius: 50%;
-    border: 1px solid rgba($color-blue, 0.06);
+    border: 1px solid rgba($color-blue, 0.04);
     pointer-events: none;
 
     &--1 {
@@ -231,7 +231,7 @@
     width: 50%;
     height: 2px;
     transform-origin: left center;
-    background: linear-gradient(90deg, rgba($color-blue, 0.4), transparent);
+    background: linear-gradient(90deg, rgba($color-blue, 0.2), transparent);
     animation: radar-sweep 4s linear infinite;
     pointer-events: none;
   }
@@ -243,14 +243,14 @@
     height: 6px;
     border-radius: 50%;
     background: $color-blue;
-    box-shadow: 0 0 8px rgba($color-blue, 0.6);
+    box-shadow: 0 0 6px rgba($color-blue, 0.4);
     animation: pulse 2s ease-in-out infinite;
     pointer-events: none;
   }
 }
 
 // ============================================================
-// Grid Pattern
+// Grid Pattern (lighter)
 // ============================================================
 
 .grid-pattern {
@@ -261,8 +261,8 @@
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(rgba($color-blue, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba($color-blue, 0.04) 1px, transparent 1px);
+      linear-gradient(rgba($color-blue, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba($color-blue, 0.02) 1px, transparent 1px);
     background-size: 48px 48px;
     mask-image: radial-gradient(
       ellipse 70% 50% at 50% 50%,
@@ -280,7 +280,7 @@
 }
 
 // ============================================================
-// Code Flow Particles
+// Code Flow Particles (slightly more opaque for light bg)
 // ============================================================
 
 .code-flow {
@@ -324,12 +324,12 @@
     top: 50%;
     right: 100%;
     transform: translateY(-50%);
-    opacity: 0.5;
+    opacity: 0.6;
   }
 }
 
 // ============================================================
-// Scan Line Effect
+// Scan Line Effect (lighter)
 // ============================================================
 
 .scan-line {
@@ -346,7 +346,7 @@
     background: linear-gradient(
       90deg,
       transparent,
-      rgba($color-blue, 0.3),
+      rgba($color-blue, 0.12),
       transparent
     );
     animation: scan-down 3s linear infinite;
@@ -416,7 +416,7 @@
 }
 
 // ============================================================
-// Loading Skeleton
+// Loading Skeleton (lighter gradient)
 // ============================================================
 
 .skeleton {

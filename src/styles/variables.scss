@@ -1,56 +1,57 @@
 // ============================================================
-// GitPulse Dark Sci-Fi Theme - Variables
+// GitPulse Light Sci-Fi Theme - Variables
 // ============================================================
 
 // ---- Colors: Backgrounds ----
-$bg-primary: #050816;
-$bg-secondary: #070B1F;
-$bg-card: #0B1026;
-$bg-card-hover: #0F1535;
-$bg-elevated: #111833;
-$bg-input: #0A0E22;
+$bg-primary: #f8faff;
+$bg-secondary: #eef2ff;
+$bg-card: #ffffff;
+$bg-card-hover: #f1f5f9;
+$bg-elevated: #ffffff;
+$bg-input: #f8fafc;
 
 // ---- Colors: Accent ----
-$color-blue: #38BDF8;
-$color-purple: #8B5CF6;
-$color-cyan: #22D3EE;
-$color-green: #34D399;
-$color-orange: #F59E0B;
-$color-red: #F87171;
-$color-pink: #F472B6;
+$color-blue: #4f6df5;
+$color-purple: #7c3aed;
+$color-cyan: #0891b2;
+$color-green: #059669;
+$color-orange: #d97706;
+$color-red: #dc2626;
+$color-pink: #db2777;
 
 // ---- Colors: Text ----
-$text-primary: #F8FAFC;
-$text-secondary: #CBD5E1;
-$text-muted: #64748B;
-$text-disabled: #475569;
+$text-primary: #1e293b;
+$text-secondary: #475569;
+$text-muted: #94a3b8;
+$text-disabled: #cbd5e1;
 
 // ---- Colors: Border ----
-$border-subtle: rgba(56, 189, 248, 0.08);
-$border-default: rgba(56, 189, 248, 0.15);
-$border-strong: rgba(56, 189, 248, 0.3);
-$border-blue: rgba(56, 189, 248, 0.4);
-$border-purple: rgba(139, 92, 246, 0.4);
-$border-cyan: rgba(34, 211, 238, 0.4);
+$border-subtle: rgba(99, 102, 241, 0.1);
+$border-default: rgba(99, 102, 241, 0.18);
+$border-strong: rgba(99, 102, 241, 0.3);
+$border-blue: rgba(79, 109, 245, 0.35);
+$border-purple: rgba(124, 58, 237, 0.35);
+$border-cyan: rgba(8, 145, 178, 0.35);
 
-// ---- Shadows: Glow Effects ----
-$glow-blue: 0 0 15px rgba(56, 189, 248, 0.25),
-            0 0 30px rgba(56, 189, 248, 0.1);
+// ---- Shadows: Subtle Colored Shadows ----
+$glow-blue: 0 2px 8px rgba(79, 109, 245, 0.12),
+            0 0 1px rgba(79, 109, 245, 0.08);
 
-$glow-purple: 0 0 15px rgba(139, 92, 246, 0.25),
-              0 0 30px rgba(139, 92, 246, 0.1);
+$glow-purple: 0 2px 8px rgba(124, 58, 237, 0.12),
+              0 0 1px rgba(124, 58, 237, 0.08);
 
-$glow-cyan: 0 0 15px rgba(34, 211, 238, 0.25),
-            0 0 30px rgba(34, 211, 238, 0.1);
+$glow-cyan: 0 2px 8px rgba(8, 145, 178, 0.12),
+            0 0 1px rgba(8, 145, 178, 0.08);
 
-$glow-green: 0 0 15px rgba(52, 211, 153, 0.25),
-             0 0 30px rgba(52, 211, 153, 0.1);
+$glow-green: 0 2px 8px rgba(5, 150, 105, 0.12),
+             0 0 1px rgba(5, 150, 105, 0.08);
 
-$shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4),
-              0 0 1px rgba(56, 189, 248, 0.1);
+$shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 1px 2px rgba(0, 0, 0, 0.06),
+              0 0 1px rgba(99, 102, 241, 0.08);
 
-$shadow-elevated: 0 8px 40px rgba(0, 0, 0, 0.5),
-                  0 0 1px rgba(56, 189, 248, 0.15);
+$shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.06),
+                  0 0 1px rgba(99, 102, 241, 0.1);
 
 // ---- Layout ----
 $max-width: 1280px;
@@ -104,7 +105,7 @@ $z-toast: 50;
 // Mixins
 // ============================================================
 
-// Glass morphism card effect
+// Light card with subtle shadow
 @mixin glass-card($blur: 12px) {
   background: $bg-card;
   border: 1px solid $border-subtle;
@@ -114,11 +115,10 @@ $z-toast: 50;
   box-shadow: $shadow-card;
 }
 
-// Glow border effect
+// Subtle colored shadow border effect
 @mixin glow-border($color: $color-blue, $intensity: 0.3) {
-  box-shadow: 0 0 10px rgba($color, $intensity * 0.6),
-              0 0 25px rgba($color, $intensity * 0.3),
-              inset 0 0 1px rgba($color, $intensity * 0.5);
+  box-shadow: 0 2px 8px rgba($color, $intensity * 0.4),
+              0 0 1px rgba($color, $intensity * 0.3);
   border-color: rgba($color, $intensity);
 }
 
@@ -173,13 +173,13 @@ $z-toast: 50;
   justify-content: space-between;
 }
 
-// Hover glow effect
+// Hover subtle shadow effect
 @mixin hover-glow($color: $color-blue) {
   transition: box-shadow $transition-base, border-color $transition-base;
 
   &:hover {
-    box-shadow: 0 0 20px rgba($color, 0.2),
-                0 0 40px rgba($color, 0.08);
-    border-color: rgba($color, 0.3);
+    box-shadow: 0 4px 12px rgba($color, 0.15),
+                0 0 1px rgba($color, 0.1);
+    border-color: rgba($color, 0.25);
   }
 }

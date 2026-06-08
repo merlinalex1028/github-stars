@@ -13,20 +13,21 @@
     "sync": "node scripts/sync.mjs"
   },
   "dependencies": {
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0",
-    "pinia": "^3.0.2",
+    "dayjs": "^1.11.13",
     "echarts": "^5.6.0",
+    "pinia": "^3.0.2",
+    "vue": "^3.5.13",
     "vue-echarts": "^7.0.3",
-    "dayjs": "^1.11.13"
+    "vue-i18n": "^10.0.8",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250607.0",
     "@vitejs/plugin-vue": "^5.2.3",
+    "sass": "^1.89.1",
+    "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "vue-tsc": "^2.2.8",
-    "typescript": "^5.8.3",
-    "sass": "^1.89.1",
-    "@cloudflare/workers-types": "^4.20250607.0",
     "wrangler": "^4.19.1"
   }
 }

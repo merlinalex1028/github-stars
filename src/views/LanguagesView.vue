@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import type { LanguageStat } from '@/types'
 
+const { t } = useI18n()
 const router = useRouter()
 const loading = ref(true)
 const languages = ref<LanguageStat[]>([])
 
 const COLORS = [
-  '#6366f1', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6',
-  '#06b6d4', '#ef4444', '#84cc16', '#f97316', '#14b8a6',
-  '#a78bfa', '#e879f9', '#facc15', '#38bdf8', '#fb7185',
+  '#4f6df5', '#db2777', '#059669', '#d97706', '#7c3aed',
+  '#0891b2', '#dc2626', '#65a30d', '#ea580c', '#0d9488',
+  '#8b5cf6', '#c026d3', '#ca8a04', '#0284c7', '#e11d48',
 ]
 
 function formatNumber(n: number): string {
@@ -94,7 +96,7 @@ onMounted(async () => {
 
 <template>
   <div class="languages">
-    <h1 class="page-title">Language Analytics</h1>
+    <h1 class="page-title">{{ t('languages.pageTitle') }}</h1>
 
     <!-- Loading -->
     <div v-if="loading" class="skeleton-grid">
@@ -104,7 +106,7 @@ onMounted(async () => {
     <template v-else>
       <!-- Pie Chart -->
       <div class="pie-section glass">
-        <h2 class="section-title">Star Distribution by Language</h2>
+        <h2 class="section-title">{{ t('languages.sectionTitle') }}</h2>
         <div class="pie-layout">
           <svg viewBox="0 0 200 200" class="pie-svg">
             <path
@@ -117,10 +119,10 @@ onMounted(async () => {
             >
               <title>{{ seg.language }}: {{ seg.pct.toFixed(1) }}%</title>
             </path>
-            <text x="100" y="96" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="800">
+            <text x="100" y="96" text-anchor="middle" fill="#1e293b" font-size="10" font-weight="800">
               {{ formatNumber(totalStars) }}
             </text>
-            <text x="100" y="110" text-anchor="middle" fill="#94a3b8" font-size="6">total stars</text>
+            <text x="100" y="110" text-anchor="middle" fill="#64748b" font-size="6">{{ t('languages.totalStars') }}</text>
           </svg>
 
           <div class="pie-legend">
@@ -154,19 +156,19 @@ onMounted(async () => {
           <div class="lang-card__stats">
             <div class="lang-card__stat">
               <span class="lang-card__stat-value">{{ formatNumber(lang.totalStars) }}</span>
-              <span class="lang-card__stat-label">Stars</span>
+              <span class="lang-card__stat-label">{{ t('languages.stars') }}</span>
             </div>
             <div class="lang-card__stat">
               <span class="lang-card__stat-value">{{ formatNumber(lang.repoCount) }}</span>
-              <span class="lang-card__stat-label">Repos</span>
+              <span class="lang-card__stat-label">{{ t('languages.repos') }}</span>
             </div>
             <div class="lang-card__stat">
               <span class="lang-card__stat-value">+{{ formatNumber(lang.todayStars) }}</span>
-              <span class="lang-card__stat-label">Today</span>
+              <span class="lang-card__stat-label">{{ t('languages.today') }}</span>
             </div>
           </div>
           <div class="lang-card__trend" :class="trendClass(lang.trendChange)">
-            {{ trendLabel(lang.trendChange) }} this week
+            {{ trendLabel(lang.trendChange) }} {{ t('languages.thisWeek') }}
           </div>
         </article>
       </div>
@@ -176,12 +178,12 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 $max-width: 1280px;
-$bg: #050816;
-$card-bg: #0B1026;
-$border: rgba(99, 102, 241, 0.15);
-$glow: #6366f1;
-$text: #e2e8f0;
-$text-muted: #94a3b8;
+$bg: #f8faff;
+$card-bg: #ffffff;
+$border: rgba(99, 102, 241, 0.12);
+$glow: #4f6df5;
+$text: #1e293b;
+$text-muted: #64748b;
 
 .languages {
   max-width: $max-width;
@@ -193,7 +195,7 @@ $text-muted: #94a3b8;
   font-size: 2rem;
   font-weight: 800;
   margin: 0 0 1.5rem;
-  background: linear-gradient(135deg, $glow, #10b981);
+  background: linear-gradient(135deg, $glow, #059669);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
@@ -203,8 +205,9 @@ $text-muted: #94a3b8;
   background: $card-bg;
   border: 1px solid $border;
   border-radius: 1rem;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 1px 2px rgba(0, 0, 0, 0.06),
+              0 0 1px rgba(99, 102, 241, 0.06);
 }
 
 .section-title {
@@ -241,7 +244,7 @@ $text-muted: #94a3b8;
 
   &:hover {
     opacity: 0.85;
-    filter: brightness(1.2);
+    filter: brightness(1.1);
   }
 }
 
@@ -261,7 +264,7 @@ $text-muted: #94a3b8;
   transition: background 0.2s;
 
   &:hover {
-    background: rgba(99, 102, 241, 0.08);
+    background: rgba(99, 102, 241, 0.06);
   }
 }
 
@@ -294,7 +297,7 @@ $text-muted: #94a3b8;
 .skeleton-card {
   height: 160px;
   border-radius: 1rem;
-  background: linear-gradient(90deg, $border 25%, rgba(99, 102, 241, 0.08) 50%, $border 75%);
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -318,7 +321,7 @@ $text-muted: #94a3b8;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 0 24px rgba(99, 102, 241, 0.12);
+    box-shadow: 0 4px 16px rgba(79, 109, 245, 0.1);
     border-color: var(--accent, $glow);
   }
 
@@ -334,7 +337,7 @@ $text-muted: #94a3b8;
     height: 12px;
     border-radius: 50%;
     background: var(--accent, $glow);
-    box-shadow: 0 0 8px var(--accent, $glow);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
   }
 
   &__name {
@@ -376,8 +379,8 @@ $text-muted: #94a3b8;
   }
 }
 
-.trend-up { color: #10b981; }
-.trend-down { color: #ef4444; }
+.trend-up { color: #059669; }
+.trend-down { color: #dc2626; }
 .trend-same { color: $text-muted; }
 
 @media (max-width: 640px) {

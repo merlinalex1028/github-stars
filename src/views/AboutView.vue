@@ -1,82 +1,64 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 const dataSources = [
   {
-    title: 'GitHub REST API',
-    description: 'Repository metadata, star counts, fork counts, topics, and language information are fetched directly from the GitHub API.',
+    titleKey: 'about.githubApiTitle',
+    descKey: 'about.githubApiDesc',
     icon: '&#128640;',
   },
   {
-    title: 'Daily Snapshots',
-    description: 'A scheduled sync job captures daily snapshots of all tracked repositories, recording star and fork deltas to compute trend data.',
+    titleKey: 'about.dailySnapshotsTitle',
+    descKey: 'about.dailySnapshotsDesc',
     icon: '&#128197;',
   },
   {
-    title: 'Cloudflare D1 Database',
-    description: 'All data is stored in a Cloudflare D1 (SQLite) database, enabling fast serverless queries at the edge.',
+    titleKey: 'about.databaseTitle',
+    descKey: 'about.databaseDesc',
     icon: '&#9729;',
   },
 ]
 
 const algorithmSteps = [
-  {
-    step: 1,
-    title: 'Star Velocity',
-    description: 'Measure the number of new stars gained in the selected time window (today, weekly, or monthly). Higher velocity indicates rising popularity.',
-  },
-  {
-    step: 2,
-    title: 'Fork Activity',
-    description: 'Track fork creation rate as a proxy for active development interest and community contribution potential.',
-  },
-  {
-    step: 3,
-    title: 'Issue Engagement',
-    description: 'Factor in open issue counts and recent push activity to gauge active maintenance and community health.',
-  },
-  {
-    step: 4,
-    title: 'Weighted Composite Score',
-    description: 'Combine all signals into a single trend score using weighted coefficients. Star velocity carries the highest weight (60%), followed by fork activity (25%) and engagement (15%).',
-  },
-  {
-    step: 5,
-    title: 'Ranking & Change Detection',
-    description: 'Sort all repositories by their composite score. Track rank changes between snapshots to surface rising and falling projects.',
-  },
+  { step: 1, titleKey: 'about.step1Title', descKey: 'about.step1Desc' },
+  { step: 2, titleKey: 'about.step2Title', descKey: 'about.step2Desc' },
+  { step: 3, titleKey: 'about.step3Title', descKey: 'about.step3Desc' },
+  { step: 4, titleKey: 'about.step4Title', descKey: 'about.step4Desc' },
+  { step: 5, titleKey: 'about.step5Title', descKey: 'about.step5Desc' },
 ]
 </script>
 
 <template>
   <div class="about">
-    <h1 class="page-title">About GitPulse</h1>
+    <h1 class="page-title">{{ t('about.pageTitle') }}</h1>
 
     <p class="intro">
-      GitPulse is an open-source analytics dashboard that tracks GitHub trending repositories
-      in real time. It provides star velocity analysis, language distribution, topic trends,
-      and a proprietary trend scoring algorithm to surface the most interesting projects on GitHub.
+      {{ t('about.intro') }}
     </p>
 
     <!-- Data Sources -->
     <section class="section">
-      <h2 class="section__title">Data Sources</h2>
+      <h2 class="section__title">{{ t('about.dataSourcesTitle') }}</h2>
       <div class="source-grid">
-        <article v-for="src in dataSources" :key="src.title" class="source-card glass">
+        <article v-for="src in dataSources" :key="src.titleKey" class="source-card glass">
           <div class="source-card__icon" v-html="src.icon" />
-          <h3 class="source-card__title">{{ src.title }}</h3>
-          <p class="source-card__desc">{{ src.description }}</p>
+          <h3 class="source-card__title">{{ t(src.titleKey) }}</h3>
+          <p class="source-card__desc">{{ t(src.descKey) }}</p>
         </article>
       </div>
     </section>
 
     <!-- Algorithm -->
     <section class="section">
-      <h2 class="section__title">Ranking Algorithm</h2>
+      <h2 class="section__title">{{ t('about.algorithmTitle') }}</h2>
       <div class="algo-timeline">
         <div v-for="step in algorithmSteps" :key="step.step" class="algo-step glass">
           <div class="algo-step__number">{{ step.step }}</div>
           <div class="algo-step__content">
-            <h3 class="algo-step__title">{{ step.title }}</h3>
-            <p class="algo-step__desc">{{ step.description }}</p>
+            <h3 class="algo-step__title">{{ t(step.titleKey) }}</h3>
+            <p class="algo-step__desc">{{ t(step.descKey) }}</p>
           </div>
         </div>
       </div>
@@ -84,29 +66,20 @@ const algorithmSteps = [
 
     <!-- Disclaimer -->
     <section class="section">
-      <h2 class="section__title">Disclaimer</h2>
+      <h2 class="section__title">{{ t('about.disclaimerTitle') }}</h2>
       <div class="disclaimer glass">
         <div class="disclaimer__icon">&#9888;</div>
         <div class="disclaimer__body">
-          <p>
-            GitPulse is an independent project and is not affiliated with, endorsed by, or connected to GitHub, Inc.
-            All GitHub logos, trademarks, and data are the property of their respective owners.
-          </p>
-          <p>
-            Trend scores are algorithmic estimates based on publicly available data and should not be considered
-            financial or investment advice. Past star activity does not guarantee future popularity.
-          </p>
-          <p>
-            Data accuracy depends on the GitHub API and the sync schedule. There may be delays or gaps
-            in historical data. Use this tool as a directional reference, not a definitive ranking.
-          </p>
+          <p>{{ t('about.disclaimer1') }}</p>
+          <p>{{ t('about.disclaimer2') }}</p>
+          <p>{{ t('about.disclaimer3') }}</p>
         </div>
       </div>
     </section>
 
     <!-- Footer -->
     <footer class="about-footer">
-      <p>GitPulse &mdash; Built with Vue 3, Cloudflare Workers &amp; D1</p>
+      <p>{{ t('about.footer') }}</p>
       <p class="about-footer__version">v1.0.0</p>
     </footer>
   </div>
@@ -114,12 +87,12 @@ const algorithmSteps = [
 
 <style scoped lang="scss">
 $max-width: 1280px;
-$bg: #050816;
-$card-bg: #0B1026;
-$border: rgba(99, 102, 241, 0.15);
-$glow: #6366f1;
-$text: #e2e8f0;
-$text-muted: #94a3b8;
+$bg: #f8faff;
+$card-bg: #ffffff;
+$border: rgba(99, 102, 241, 0.12);
+$glow: #4f6df5;
+$text: #1e293b;
+$text-muted: #64748b;
 
 .about {
   max-width: $max-width;
@@ -132,14 +105,16 @@ $text-muted: #94a3b8;
   border: 1px solid $border;
   border-radius: 1rem;
   backdrop-filter: blur(12px);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 1px 2px rgba(0, 0, 0, 0.06),
+              0 0 1px rgba(99, 102, 241, 0.06);
 }
 
 .page-title {
   font-size: 2rem;
   font-weight: 800;
   margin: 0 0 1rem;
-  background: linear-gradient(135deg, $glow, #ec4899);
+  background: linear-gradient(135deg, $glow, #7c3aed);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
@@ -173,8 +148,8 @@ $text-muted: #94a3b8;
       bottom: 0.25rem;
       width: 3px;
       border-radius: 2px;
-      background: linear-gradient(180deg, $glow, #ec4899);
-      box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+      background: linear-gradient(180deg, $glow, #7c3aed);
+      box-shadow: 0 0 8px rgba(79, 109, 245, 0.3);
     }
   }
 }
@@ -192,7 +167,7 @@ $text-muted: #94a3b8;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 0 24px rgba(99, 102, 241, 0.12);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1);
   }
 
   &__icon {
@@ -229,7 +204,7 @@ $text-muted: #94a3b8;
     top: 0;
     bottom: 0;
     width: 2px;
-    background: linear-gradient(180deg, $glow, rgba(99, 102, 241, 0.1));
+    background: linear-gradient(180deg, $glow, rgba(79, 109, 245, 0.1));
   }
 }
 
@@ -251,7 +226,7 @@ $text-muted: #94a3b8;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 2px 8px rgba(79, 109, 245, 0.25);
     z-index: 1;
   }
 
@@ -284,7 +259,7 @@ $text-muted: #94a3b8;
   &__icon {
     font-size: 1.75rem;
     flex-shrink: 0;
-    color: #f59e0b;
+    color: #d97706;
   }
 
   &__body {
