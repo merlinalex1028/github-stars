@@ -1,161 +1,221 @@
-# Deploying GitPulse to Cloudflare Pages (Free Tier)
+# GitPulse 部署指南（Cloudflare Pages 免费方案）
 
-This guide walks through every step of deploying GitPulse to Cloudflare Pages with a D1 database, from zero to a live site with automated daily syncs. Everything described here stays within Cloudflare's free tier limits.
-
----
-
-## Table of Contents
-
-1. [Prerequisites](#1-prerequisites)
-2. [Fork or Clone the Repository](#2-fork-or-clone-the-repository)
-3. [Create a Cloudflare Pages Project](#3-create-a-cloudflare-pages-project)
-4. [Create a D1 Database](#4-create-a-d1-database)
-5. [Configure the D1 Binding](#5-configure-the-d1-binding)
-6. [Set Environment Variables](#6-set-environment-variables)
-7. [Initialize the Database Schema](#7-initialize-the-database-schema)
-8. [First Deploy](#8-first-deploy)
-9. [Set Up Daily Sync via GitHub Actions](#9-set-up-daily-sync-via-github-actions)
-10. [Custom Domain (Optional)](#10-custom-domain-optional)
-11. [Verify the Deployment](#11-verify-the-deployment)
-12. [Troubleshooting](#12-troubleshooting)
+本指南将带你从零开始，将 GitPulse 部署到 Cloudflare Pages，全程使用免费套餐。
 
 ---
 
-## 1. Prerequisites
+## 目录
 
-Make sure you have the following before starting:
+1. [环境要求](#1-环境要求)
+2. [本地开发启动](#2-本地开发启动)
+3. [Fork 或克隆仓库](#3-fork-或克隆仓库)
+4. [创建 Cloudflare Pages 项目](#4-创建-cloudflare-pages-项目)
+5. [创建 D1 数据库](#5-创建-d1-数据库)
+6. [配置 D1 数据库绑定](#6-配置-d1-数据库绑定)
+7. [设置环境变量](#7-设置环境变量)
+8. [初始化数据库表结构](#8-初始化数据库表结构)
+9. [首次部署](#9-首次部署)
+10. [配置每日自动同步（GitHub Actions）](#10-配置每日自动同步github-actions)
+11. [绑定自定义域名（可选）](#11-绑定自定义域名可选)
+12. [验证部署是否成功](#12-验证部署是否成功)
+13. [常见问题排查](#13-常见问题排查)
 
-- **GitHub account** -- the repo must be hosted on GitHub to use the Git integration
-- **Cloudflare account** -- sign up free at [dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up)
-- **GitHub Personal Access Token** -- needed for the daily sync job to call the GitHub API
-  - Go to [github.com/settings/tokens](https://github.com/settings/tokens)
-  - Click **Generate new token (classic)**
-  - Name it something like `gitpulse-sync`
-  - Check the **public_repo** scope (read-only access to public repositories)
-  - Click **Generate token**
-  - Copy the token immediately (you will not see it again)
+---
 
-## 2. Fork or Clone the Repository
+## 1. 环境要求
+
+开始之前，请确保你有以下条件：
+
+- **GitHub 账号** — 仓库需要托管在 GitHub 上才能使用 Git 集成部署
+- **Cloudflare 账号** — 免费注册：[dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up)
+- **Node.js 18+** — 本地开发需要
+- **GitHub Personal Access Token** — 每日同步任务需要调用 GitHub API
+  - 前往 [github.com/settings/tokens](https://github.com/settings/tokens)
+  - 点击 **Generate new token (classic)**
+  - 命名为 `gitpulse-sync`
+  - 勾选 **public_repo** 权限（只读访问公开仓库）
+  - 点击 **Generate token**
+  - 立即复制 token（之后无法再次查看）
+
+---
+
+## 2. 本地开发启动
+
+### 2.1 安装依赖
 
 ```bash
-# Option A: Fork on GitHub (recommended for deployment)
-# Click the "Fork" button on the repository page
+cd gitpulse
+npm install
+```
 
-# Option B: Clone directly
+### 2.2 启动开发服务器
+
+```bash
+npm run dev
+```
+
+浏览器访问 `http://localhost:5173` 即可看到页面。
+
+**说明：** 本地开发时，API 接口会自动使用 mock 数据（无需数据库），所有页面和功能都可以正常预览。
+
+### 2.3 可用的 npm 脚本
+
+| 命令 | 说明 |
+|------|------|
+| `npm run dev` | 启动 Vite 开发服务器（热更新） |
+| `npm run build` | 构建生产版本到 `dist/` 目录 |
+| `npm run preview` | 本地预览构建后的生产版本 |
+| `npm run deploy` | 构建并部署到 Cloudflare Pages |
+| `npm run db:init` | 初始化本地 D1 数据库表结构 |
+| `npm run db:seed` | 向本地 D1 数据库写入测试数据 |
+
+### 2.4 本地测试 Pages Functions（可选）
+
+如果你想在本地测试 Cloudflare Pages Functions（后端 API），需要使用 Wrangler：
+
+```bash
+# 先构建前端
+npm run build
+
+# 使用 Wrangler 启动本地 Pages 环境（含 D1）
+npx wrangler pages dev dist --d1 DB=gitpulse-db
+```
+
+这会同时启动前端静态文件和后端 API，模拟真实的 Cloudflare Pages 环境。
+
+---
+
+## 3. Fork 或克隆仓库
+
+```bash
+# 方式一：在 GitHub 上 Fork（推荐）
+# 在仓库页面点击右上角 "Fork" 按钮
+
+# 方式二：直接克隆
 git clone https://github.com/your-username/gitpulse.git
 cd gitpulse
 ```
 
-Push the code to your own GitHub repository if you cloned it:
+如果你是克隆的，需要推送到自己的 GitHub 仓库：
 
 ```bash
 git remote set-url origin https://github.com/your-username/gitpulse.git
 git push -u origin main
 ```
 
-## 3. Create a Cloudflare Pages Project
+---
 
-1. Log in to the [Cloudflare Dashboard](https://dash.cloudflare.com).
+## 4. 创建 Cloudflare Pages 项目
 
-2. In the left sidebar, go to **Workers & Pages**.
+1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)
 
-3. Click the **Create** button.
+2. 在左侧菜单进入 **Workers & Pages**
 
-4. Select the **Pages** tab.
+3. 点击 **Create** 按钮
 
-5. Click **Connect to Git**.
+4. 选择 **Pages** 标签页
 
-6. Authorize Cloudflare to access your GitHub account if prompted.
+5. 点击 **Connect to Git**
 
-7. Select your `gitpulse` repository from the list.
+6. 如果提示授权，允许 Cloudflare 访问你的 GitHub 账号
 
-8. Click **Begin setup**.
+7. 从列表中选择你的 `gitpulse` 仓库
 
-9. Configure the build settings:
+8. 点击 **Begin setup**
 
-   | Setting | Value |
-   |---------|-------|
+9. 配置构建设置：
+
+   | 设置项 | 值 |
+   |--------|-----|
    | **Production branch** | `main` |
    | **Framework preset** | `Vue` |
    | **Build command** | `npm run build` |
    | **Build output directory** | `dist` |
 
-10. Click **Save and Deploy**.
+10. 点击 **Save and Deploy**
 
-Cloudflare will run the first build. It may fail at this point because the D1 binding and environment variables are not configured yet. That is expected -- continue with the next steps.
+Cloudflare 会执行首次构建。此时因为 D1 绑定和环境变量还没配置，构建可能会失败，这是正常的，请继续后续步骤。
 
-## 4. Create a D1 Database
+---
 
-1. In the Cloudflare Dashboard, go to **Workers & Pages** in the left sidebar.
+## 5. 创建 D1 数据库
 
-2. Click the **D1** tab at the top of the page.
+1. 在 Cloudflare Dashboard 左侧菜单进入 **Workers & Pages**
 
-3. Click **Create database**.
+2. 点击顶部的 **D1** 标签页
 
-4. Enter the database name: `gitpulse-db`
+3. 点击 **Create database**
 
-5. Leave the location set to **Automatic** (Cloudflare picks the closest region).
+4. 数据库名称填写：`gitpulse-db`
 
-6. Click **Create**.
+5. Location 保持 **Automatic**（Cloudflare 自动选择最近区域）
 
-7. After creation, copy the **Database ID** from the database details page. You will need this for the `wrangler.toml` file (only needed for local development with wrangler).
+6. 点击 **Create**
 
-## 5. Configure the D1 Binding
+7. 创建完成后，在数据库详情页复制 **Database ID**（本地开发用 wrangler 时需要）
 
-The D1 binding connects your Pages project to the database so that serverless functions can access it via `context.env.DB`.
+---
 
-1. In the Cloudflare Dashboard, go to **Workers & Pages**.
+## 6. 配置 D1 数据库绑定
 
-2. Click on your **gitpulse** Pages project.
+D1 绑定让 Pages Functions 能通过 `context.env.DB` 访问数据库。
 
-3. Go to **Settings** > **Functions**.
+1. 在 Cloudflare Dashboard 进入 **Workers & Pages**
 
-4. Scroll down to the **D1 database bindings** section.
+2. 点击你的 **gitpulse** Pages 项目
 
-5. Click **Add binding**.
+3. 进入 **Settings** > **Functions**
 
-6. Fill in:
+4. 向下滚动到 **D1 database bindings** 部分
 
-   | Field | Value |
-   |-------|-------|
+5. 点击 **Add binding**
+
+6. 填写：
+
+   | 字段 | 值 |
+   |------|-----|
    | **Variable name** | `DB` |
-   | **D1 database** | `gitpulse-db` (select from the dropdown) |
+   | **D1 database** | `gitpulse-db`（从下拉菜单选择） |
 
-7. Click **Save**.
+7. 点击 **Save**
 
-This makes the D1 database available as `context.env.DB` inside all Pages Functions.
+这样所有 Pages Functions 就可以通过 `context.env.DB` 访问 D1 数据库了。
 
-## 6. Set Environment Variables
+---
 
-Environment variables are used by the sync endpoint and the build process.
+## 7. 设置环境变量
 
-1. In your Pages project, go to **Settings** > **Environment variables**.
+环境变量用于同步端点和构建过程。
 
-2. Add the following variables for the **Production** environment:
+1. 在你的 Pages 项目中，进入 **Settings** > **Environment variables**
 
-   | Variable name | Value | Notes |
-   |---------------|-------|-------|
-   | `GITHUB_TOKEN` | `ghp_xxxxxxxxxxxx` | Your GitHub PAT from Step 1. Mark as **Encrypt** for security. |
-   | `SYNC_SECRET` | `your-random-secret-here` | A random string used to authenticate sync requests. Generate one with `openssl rand -hex 32`. Mark as **Encrypt**. |
+2. 为 **Production** 环境添加以下变量：
 
-3. Click **Save**.
+   | 变量名 | 值 | 说明 |
+   |--------|-----|------|
+   | `GITHUB_TOKEN` | `ghp_xxxxxxxxxxxx` | 第 1 步生成的 GitHub Token，建议标记为 **Encrypt** |
+   | `SYNC_SECRET` | `你的随机密钥` | 用于验证同步请求的随机字符串，用 `openssl rand -hex 32` 生成，建议标记为 **Encrypt** |
 
-**Important**: Do NOT set `VITE_API_BASE_URL` in production. The frontend uses relative paths (`/api/...`) which work automatically when the API and frontend are on the same domain.
+3. 点击 **Save**
 
-## 7. Initialize the Database Schema
+**注意：** 生产环境不要设置 `VITE_API_BASE_URL`。前端使用相对路径（`/api/...`），在同一域名下自动生效。
 
-The database starts empty. You need to create the tables before the sync can work.
+---
 
-1. In the Cloudflare Dashboard, go to **Workers & Pages** > **D1**.
+## 8. 初始化数据库表结构
 
-2. Click on your **gitpulse-db** database.
+数据库初始为空，需要先创建表结构才能进行数据同步。
 
-3. Click the **Console** tab (this opens the SQL editor).
+1. 在 Cloudflare Dashboard 进入 **Workers & Pages** > **D1**
 
-4. Paste the entire contents of `database/schema.sql`:
+2. 点击你的 **gitpulse-db** 数据库
+
+3. 点击 **Console** 标签页（打开 SQL 编辑器）
+
+4. 粘贴 `database/schema.sql` 文件的完整内容：
 
 ```sql
--- GitPulse D1 Database Schema
+-- GitPulse 数据库表结构
 
 CREATE TABLE IF NOT EXISTS repositories (
   id INTEGER PRIMARY KEY,
@@ -208,61 +268,65 @@ CREATE INDEX IF NOT EXISTS idx_repos_language ON repositories(language);
 CREATE INDEX IF NOT EXISTS idx_repos_stars ON repositories(stars DESC);
 ```
 
-5. Click **Execute**.
+5. 点击 **Execute**
 
-You should see a success message for each statement. The database is now ready.
+你应该看到每条语句都执行成功。数据库现在已准备就绪。
 
-## 8. First Deploy
+---
 
-After configuring the D1 binding and environment variables, trigger a new deployment:
+## 9. 首次部署
 
-**Option A: Push a commit**
+配置好 D1 绑定和环境变量后，触发一次新的部署：
+
+**方式一：推送一个空提交**
 
 ```bash
-git commit --allow-empty -m "chore: trigger redeploy after env config"
+git commit --allow-empty -m "chore: 配置完成后触发重新部署"
 git push origin main
 ```
 
-**Option B: Manual redeploy**
+**方式二：手动重新部署**
 
-1. In your Pages project, go to **Deployments**.
-2. Click the **...** menu on the latest deployment.
-3. Click **Retry deployment**.
+1. 在 Pages 项目中进入 **Deployments**
+2. 点击最近一次部署的 **...** 菜单
+3. 点击 **Retry deployment**
 
-Wait for the build to complete (usually 1-2 minutes). Once it succeeds:
+等待构建完成（通常 1-2 分钟）。构建成功后：
 
-1. Click the deployment URL (e.g., `https://gitpulse.pages.dev`).
-2. The dashboard should load with mock data (since no sync has run yet).
+1. 点击部署链接（如 `https://gitpulse.pages.dev`）
+2. Dashboard 应该能正常加载（显示 mock 数据，因为还没有运行同步）
 
-## 9. Set Up Daily Sync via GitHub Actions
+---
 
-The sync endpoint (`POST /api/sync`) fetches the top 100 starred repositories from GitHub and writes them to D1. You automate this with GitHub Actions.
+## 10. 配置每日自动同步（GitHub Actions）
 
-### 9.1 Add Repository Secrets
+同步端点（`POST /api/sync`）会从 GitHub 获取 Top 100 热门仓库并写入 D1。我们用 GitHub Actions 实现每日自动执行。
 
-1. Go to your GitHub repository on github.com.
+### 10.1 添加仓库密钥
 
-2. Click **Settings** > **Secrets and variables** > **Actions**.
+1. 进入你的 GitHub 仓库页面
 
-3. Click **New repository secret** and add:
+2. 点击 **Settings** > **Secrets and variables** > **Actions**
 
-   | Secret name | Value |
-   |-------------|-------|
-   | `SYNC_URL` | `https://your-project.pages.dev/api/sync` (replace with your actual Pages URL) |
-   | `SYNC_SECRET` | The same value you set as `SYNC_SECRET` in Cloudflare |
+3. 点击 **New repository secret**，添加：
 
-### 9.2 Create the Workflow File
+   | 密钥名 | 值 |
+   |--------|-----|
+   | `SYNC_URL` | `https://你的项目.pages.dev/api/sync`（替换为你的实际 Pages 地址） |
+   | `SYNC_SECRET` | 与 Cloudflare 环境变量中设置的 `SYNC_SECRET` 相同 |
 
-Create the file `.github/workflows/sync.yml` in your repository:
+### 10.2 确认工作流文件
+
+项目中已包含 `.github/workflows/sync.yml`，内容如下：
 
 ```yaml
 name: Daily Sync
 
 on:
   schedule:
-    # Run daily at 02:00 UTC
+    # 每天 UTC 02:00 执行（北京时间 10:00）
     - cron: '0 2 * * *'
-  workflow_dispatch: # Allow manual trigger from GitHub UI
+  workflow_dispatch: # 支持从 GitHub 页面手动触发
 
 jobs:
   sync:
@@ -270,7 +334,7 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Trigger sync endpoint
+      - name: 触发同步接口
         run: |
           HTTP_STATUS=$(curl -s -o /tmp/response.txt -w "%{http_code}" \
             -X POST "${{ secrets.SYNC_URL }}" \
@@ -280,153 +344,158 @@ jobs:
             --retry 3 \
             --retry-delay 10)
 
-          echo "HTTP Status: $HTTP_STATUS"
-          echo "Response:"
+          echo "HTTP 状态码: $HTTP_STATUS"
+          echo "响应内容:"
           cat /tmp/response.txt
           echo ""
 
           if [ "$HTTP_STATUS" -ne 200 ]; then
-            echo "::error::Sync failed with HTTP status $HTTP_STATUS"
+            echo "::error::同步失败，HTTP 状态码 $HTTP_STATUS"
             exit 1
           fi
 
-          # Check if the response indicates success
           SUCCESS=$(cat /tmp/response.txt | grep -o '"success":true' || true)
           if [ -z "$SUCCESS" ]; then
-            echo "::error::Sync endpoint returned success=false"
+            echo "::error::同步接口返回 success=false"
             cat /tmp/response.txt
             exit 1
           fi
 
-          echo "Sync completed successfully"
+          echo "同步完成"
 ```
 
-### 9.3 Commit and Push
+### 10.3 提交并推送
 
 ```bash
 git add .github/workflows/sync.yml
-git commit -m "ci: add daily sync workflow"
+git commit -m "ci: 添加每日同步工作流"
 git push origin main
 ```
 
-### 9.4 Verify the Workflow
+### 10.4 验证工作流
 
-1. Go to your repository on GitHub.
-2. Click the **Actions** tab.
-3. You should see the "Daily Sync" workflow listed.
-4. Click **Run workflow** to trigger it manually for the first time.
-5. Check the workflow run logs to confirm it succeeded.
+1. 进入你的 GitHub 仓库
+2. 点击 **Actions** 标签页
+3. 你应该能看到 "Daily Sync" 工作流
+4. 点击 **Run workflow** 手动触发一次
+5. 检查工作流运行日志确认成功
 
-After the first successful sync, the dashboard will show real data from GitHub.
+首次同步成功后，Dashboard 就会显示来自 GitHub 的真实数据了。
 
-## 10. Custom Domain (Optional)
+---
 
-To use your own domain instead of `*.pages.dev`:
+## 11. 绑定自定义域名（可选）
 
-1. In your Pages project, go to **Custom domains**.
+如果你想用自己的域名替代 `*.pages.dev`：
 
-2. Click **Set up a custom domain**.
+1. 在 Pages 项目中进入 **Custom domains**
 
-3. Enter your domain (e.g., `gitpulse.yourdomain.com`).
+2. 点击 **Set up a custom domain**
 
-4. Click **Continue**.
+3. 输入你的域名（如 `gitpulse.yourdomain.com`）
 
-5. Cloudflare will provide DNS records to add:
-   - If your domain is already on Cloudflare: the CNAME record is added automatically.
-   - If your domain is elsewhere: add a CNAME record pointing `gitpulse` to `gitpulse.pages.dev`.
+4. 点击 **Continue**
 
-6. Wait for DNS propagation (usually a few minutes on Cloudflare, up to 24 hours elsewhere).
+5. Cloudflare 会提供需要添加的 DNS 记录：
+   - 如果你的域名已经在 Cloudflare：CNAME 记录会自动添加
+   - 如果域名在其他服务商：手动添加 CNAME 记录，指向 `gitpulse.pages.dev`
 
-7. SSL is provisioned automatically once DNS is verified.
+6. 等待 DNS 生效（Cloudflare 通常几分钟，其他服务商最多 24 小时）
 
-## 11. Verify the Deployment
+7. DNS 验证通过后 SSL 证书会自动签发
 
-Run through this checklist to confirm everything works:
+---
 
-1. **Homepage loads** -- Visit `https://your-project.pages.dev`. The dashboard should render without errors.
+## 12. 验证部署是否成功
 
-2. **API responds** -- Open `https://your-project.pages.dev/api/trending` in a browser. You should see a JSON response with `success: true`.
+按照以下清单逐项确认：
 
-3. **Database has data** -- Open `https://your-project.pages.dev/api/trending?pageSize=5`. If the sync has run, `data` should contain real repositories.
+1. **首页能打开** — 访问 `https://你的项目.pages.dev`，Dashboard 应正常渲染
 
-4. **Filters work** -- Try `?language=TypeScript`, `?topic=ai`, `?search=react`, `?range=weekly`.
+2. **API 有响应** — 浏览器打开 `https://你的项目.pages.dev/api/trending`，应该返回 JSON 数据
 
-5. **Sync endpoint works** -- From a terminal:
+3. **数据库有数据** — 访问 `https://你的项目.pages.dev/api/trending?pageSize=5`，如果同步已运行，`data` 应包含真实仓库
+
+4. **筛选功能正常** — 尝试 `?language=TypeScript`、`?topic=ai`、`?search=react`、`?range=weekly`
+
+5. **同步端点正常** — 在终端执行：
    ```bash
-   curl -X POST "https://your-project.pages.dev/api/sync" \
-     -H "Authorization: Bearer YOUR_SYNC_SECRET"
+   curl -X POST "https://你的项目.pages.dev/api/sync" \
+     -H "Authorization: Bearer 你的SYNC_SECRET"
    ```
-   You should get back a JSON response with `success: true` and sync details.
+   应返回 `success: true` 和同步详情
 
-6. **GitHub Actions runs** -- Check the Actions tab in your repo. The daily workflow should have run (or you can trigger it manually).
+6. **GitHub Actions 正常** — 检查仓库的 Actions 标签页，每日工作流应该已运行（或手动触发一次）
 
-## 12. Troubleshooting
+---
 
-### Build fails with TypeScript errors
+## 13. 常见问题排查
 
-The build command includes `vue-tsc --noEmit` for type checking. If the build fails:
+### 构建失败，TypeScript 报错
 
-- Check the build logs in the Cloudflare dashboard for specific TypeScript errors.
-- Run `npm run build` locally to reproduce and fix the issue.
+构建命令包含 `vue-tsc --noEmit` 类型检查。如果构建失败：
 
-### API returns mock data instead of real data
+- 在 Cloudflare Dashboard 查看构建日志中的具体 TypeScript 错误
+- 本地执行 `npm run build` 复现并修复问题
 
-This means the D1 database is either empty or not bound correctly.
+### API 返回 mock 数据而不是真实数据
 
-1. **Check the D1 binding**: Settings > Functions > D1 bindings. Variable name must be exactly `DB`.
-2. **Check the database**: Go to D1 > gitpulse-db > Console. Run `SELECT COUNT(*) FROM repos;`. If it returns 0, the sync has not run yet.
-3. **Run the sync**: Trigger it manually via the API or GitHub Actions.
+说明 D1 数据库为空或绑定配置有误。
 
-### Sync endpoint returns 401 Unauthorized
+1. **检查 D1 绑定**：Settings > Functions > D1 bindings，变量名必须是 `DB`
+2. **检查数据库**：进入 D1 > gitpulse-db > Console，执行 `SELECT COUNT(*) FROM repositories;`，如果返回 0 说明同步还没运行
+3. **运行同步**：通过 API 或 GitHub Actions 手动触发同步
 
-The `SYNC_SECRET` is missing or does not match.
+### 同步端点返回 401 Unauthorized
 
-1. Verify the `SYNC_SECRET` environment variable in Cloudflare Pages settings.
-2. Verify the `SYNC_SECRET` repository secret in GitHub matches.
-3. Make sure the GitHub Actions workflow is sending the correct header: `Authorization: Bearer <secret>`.
+`SYNC_SECRET` 缺失或不匹配。
 
-### Sync endpoint returns 500
+1. 检查 Cloudflare Pages 环境变量中的 `SYNC_SECRET`
+2. 检查 GitHub 仓库密钥中的 `SYNC_SECRET` 是否一致
+3. 确认 GitHub Actions 发送的 header 格式为 `Authorization: Bearer <secret>`
 
-The `GITHUB_TOKEN` may be invalid or missing.
+### 同步端点返回 500
 
-1. Check that `GITHUB_TOKEN` is set in the Pages environment variables.
-2. Verify the token has not expired on GitHub.
-3. Check that the token has the `public_repo` scope.
-4. Look at the sync response body for the specific error message.
+`GITHUB_TOKEN` 可能无效或缺失。
 
-### D1 binding error: "DB is not defined"
+1. 检查 Pages 环境变量中是否设置了 `GITHUB_TOKEN`
+2. 确认 token 在 GitHub 上没有过期
+3. 确认 token 拥有 `public_repo` 权限
+4. 查看同步响应体中的具体错误信息
 
-The Pages function cannot find the D1 binding.
+### D1 绑定报错："DB is not defined"
 
-1. Go to Settings > Functions in your Pages project.
-2. Confirm the binding exists with variable name `DB` and points to `gitpulse-db`.
-3. Redeploy after adding or changing bindings.
+Pages Functions 找不到 D1 绑定。
 
-### GitHub Actions workflow does not trigger
+1. 进入 Pages 项目 Settings > Functions
+2. 确认绑定存在，变量名为 `DB`，指向 `gitpulse-db`
+3. 添加或修改绑定后需要重新部署
 
-1. Make sure the workflow file is on the `main` branch (or your production branch).
-2. Check that the cron syntax is correct: `0 2 * * *` for 02:00 UTC daily.
-3. GitHub disables scheduled workflows in repos with no activity in 60 days. Push a commit to re-enable.
-4. Verify the `SYNC_URL` and `SYNC_SECRET` secrets are set in the repository settings.
+### GitHub Actions 工作流不触发
 
-### Pages free tier limits
+1. 确认工作流文件在 `main` 分支（或你的生产分支）上
+2. 检查 cron 语法是否正确：`0 2 * * *` 表示每天 UTC 02:00
+3. GitHub 会在仓库 60 天无活动后禁用定时工作流，推送一次提交即可重新启用
+4. 确认仓库设置中已配置 `SYNC_URL` 和 `SYNC_SECRET` 密钥
 
-Cloudflare Pages free tier includes:
+### Cloudflare Pages 免费套餐限制
 
-- 500 builds per month
-- 100,000 requests per day to Functions
-- 1 GB D1 storage
-- 5 million D1 rows read per day
-- 100,000 D1 rows written per day
+Cloudflare Pages 免费套餐包含：
 
-For a project of this size, these limits are more than sufficient. Monitor usage in the Cloudflare Dashboard under **Workers & Pages** > your project > **Analytics**.
+- 每月 500 次构建
+- 每天 100,000 次 Functions 请求
+- 1 GB D1 存储
+- 每天 500 万次 D1 行读取
+- 每天 100,000 次 D1 行写入
 
-### Local development without D1
+对于本项目的体量，这些限额绰绰有余。可以在 Cloudflare Dashboard 的 **Workers & Pages** > 项目 > **Analytics** 中监控使用情况。
 
-When running `npm run dev` locally, there is no D1 database available. The API functions automatically fall back to mock data so the UI is fully functional without a database connection.
+### 本地开发没有 D1 数据库
 
-To test with a real D1 database locally:
+执行 `npm run dev` 时没有 D1 数据库，API 会自动回退到 mock 数据，UI 可以完整预览。
 
-1. Update `wrangler.toml` with your D1 database ID.
-2. Run `npx wrangler pages dev dist --d1 DB=gitpulse-db` (after building).
-3. Or use `npm run db:init` to initialize a local D1 database via wrangler.
+如果需要本地测试真实 D1：
+
+1. 在 `wrangler.toml` 中填入你的 D1 Database ID
+2. 构建后执行 `npx wrangler pages dev dist --d1 DB=gitpulse-db`
+3. 或使用 `npm run db:init` 通过 wrangler 初始化本地 D1 数据库
