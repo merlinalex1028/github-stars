@@ -1,12 +1,13 @@
 -- GitPulse D1 Database Schema
 
-CREATE TABLE IF NOT EXISTS repositories (
+CREATE TABLE IF NOT EXISTS repos (
   id INTEGER PRIMARY KEY,
   full_name TEXT NOT NULL UNIQUE,
   owner TEXT NOT NULL,
+  name TEXT NOT NULL,
   owner_avatar TEXT NOT NULL DEFAULT '',
   description TEXT DEFAULT '',
-  html_url TEXT NOT NULL,
+  url TEXT NOT NULL,
   stars INTEGER NOT NULL DEFAULT 0,
   forks INTEGER NOT NULL DEFAULT 0,
   open_issues INTEGER NOT NULL DEFAULT 0,
@@ -20,7 +21,7 @@ CREATE TABLE IF NOT EXISTS repositories (
   default_branch TEXT NOT NULL DEFAULT 'main'
 );
 
-CREATE TABLE IF NOT EXISTS repo_snapshots (
+CREATE TABLE IF NOT EXISTS snapshots (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   repo_id INTEGER NOT NULL,
   date TEXT NOT NULL,
@@ -32,8 +33,15 @@ CREATE TABLE IF NOT EXISTS repo_snapshots (
   trend_score REAL NOT NULL DEFAULT 0,
   rank INTEGER NOT NULL DEFAULT 0,
   rank_change INTEGER NOT NULL DEFAULT 0,
-  FOREIGN KEY (repo_id) REFERENCES repositories(id),
+  FOREIGN KEY (repo_id) REFERENCES repos(id),
   UNIQUE(repo_id, date)
+);
+
+CREATE TABLE IF NOT EXISTS repo_topics (
+  repo_id INTEGER NOT NULL,
+  topic TEXT NOT NULL,
+  FOREIGN KEY (repo_id) REFERENCES repos(id),
+  UNIQUE(repo_id, topic)
 );
 
 CREATE TABLE IF NOT EXISTS sync_logs (
@@ -45,7 +53,9 @@ CREATE TABLE IF NOT EXISTS sync_logs (
   duration INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE INDEX IF NOT EXISTS idx_snapshots_date ON repo_snapshots(date);
-CREATE INDEX IF NOT EXISTS idx_snapshots_repo_date ON repo_snapshots(repo_id, date);
-CREATE INDEX IF NOT EXISTS idx_repos_language ON repositories(language);
-CREATE INDEX IF NOT EXISTS idx_repos_stars ON repositories(stars DESC);
+CREATE INDEX IF NOT EXISTS idx_snapshots_date ON snapshots(date);
+CREATE INDEX IF NOT EXISTS idx_snapshots_repo_date ON snapshots(repo_id, date);
+CREATE INDEX IF NOT EXISTS idx_repo_topics_topic ON repo_topics(topic);
+CREATE INDEX IF NOT EXISTS idx_repo_topics_repo ON repo_topics(repo_id);
+CREATE INDEX IF NOT EXISTS idx_repos_language ON repos(language);
+CREATE INDEX IF NOT EXISTS idx_repos_stars ON repos(stars DESC);

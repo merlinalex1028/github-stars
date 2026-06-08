@@ -48,9 +48,32 @@ async function performSync(env: Env): Promise<SyncLog> {
     const repos = data.items || []
 
     if (env.DB) {
-      for (const repo of repos) {
+      for (const [index, repo] of repos.entries()) {
         const fullName = repo.full_name as string
         const [owner, name] = fullName.split('/')
+        const repoId = repo.id as number
+        const stars = (repo.stargazers_count as number) || 0
+        const forks = (repo.forks_count as number) || 0
+        const openIssues = (repo.open_issues_count as number) || 0
+        const topics = Array.isArray(repo.topics) ? repo.topics as string[] : []
+
+        const previousSnapshot = await env.DB.prepare(
+          `SELECT stars, forks, rank
+           FROM snapshots
+           WHERE repo_id = ? AND date < ?
+           ORDER BY date DESC
+           LIMIT 1`
+        ).bind(repoId, syncDate).first<{
+          stars: number
+          forks: number
+          rank: number
+        }>()
+
+        const todayStars = previousSnapshot ? Math.max(0, stars - previousSnapshot.stars) : 0
+        const todayForks = previousSnapshot ? Math.max(0, forks - previousSnapshot.forks) : 0
+        const rank = index + 1
+        const rankChange = previousSnapshot ? previousSnapshot.rank - rank : 0
+        const trendScore = todayStars * 2 + todayForks + Math.max(0, rankChange) * 5
 
         await env.DB.prepare(
           `INSERT INTO repos (full_name, owner, name, owner_avatar, description, url, stars, forks, open_issues, language, topics, license, created_at, updated_at, pushed_at, homepage, default_branch)
@@ -60,7 +83,10 @@ async function performSync(env: Env): Promise<SyncLog> {
              forks = excluded.forks,
              open_issues = excluded.open_issues,
              updated_at = excluded.updated_at,
-             pushed_at = excluded.pushed_at`
+             pushed_at = excluded.pushed_at,
+             topics = excluded.topics,
+             homepage = excluded.homepage,
+             default_branch = excluded.default_branch`
         ).bind(
           fullName,
           owner,
@@ -68,11 +94,11 @@ async function performSync(env: Env): Promise<SyncLog> {
           (repo.owner as Record<string, string>)?.avatar_url || '',
           repo.description || '',
           repo.html_url || '',
-          repo.stargazers_count || 0,
-          repo.forks_count || 0,
-          repo.open_issues_count || 0,
+          stars,
+          forks,
+          openIssues,
           repo.language || '',
-          JSON.stringify(repo.topics || []),
+          JSON.stringify(topics),
           (repo.license as Record<string, string>)?.spdx_id || null,
           repo.created_at || '',
           repo.updated_at || '',
@@ -80,9 +106,39 @@ async function performSync(env: Env): Promise<SyncLog> {
           repo.homepage || null,
           repo.default_branch || 'main',
         ).run()
-      }
 
-      const todayStars = repos.reduce((sum, r) => sum + ((r.stargazers_count as number) || 0), 0)
+        await env.DB.prepare(
+          `INSERT INTO snapshots (repo_id, date, stars, forks, open_issues, today_stars, today_forks, trend_score, rank, rank_change)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(repo_id, date) DO UPDATE SET
+             stars = excluded.stars,
+             forks = excluded.forks,
+             open_issues = excluded.open_issues,
+             today_stars = excluded.today_stars,
+             today_forks = excluded.today_forks,
+             trend_score = excluded.trend_score,
+             rank = excluded.rank,
+             rank_change = excluded.rank_change`
+        ).bind(
+          repoId,
+          syncDate,
+          stars,
+          forks,
+          openIssues,
+          todayStars,
+          todayForks,
+          trendScore,
+          rank,
+          rankChange,
+        ).run()
+
+        await env.DB.prepare('DELETE FROM repo_topics WHERE repo_id = ?').bind(repoId).run()
+        for (const topic of topics) {
+          await env.DB.prepare(
+            `INSERT OR IGNORE INTO repo_topics (repo_id, topic) VALUES (?, ?)`
+          ).bind(repoId, topic).run()
+        }
+      }
 
       await env.DB.prepare(
         `INSERT INTO sync_logs (sync_date, status, total_repos, message, duration)
