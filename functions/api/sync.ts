@@ -20,6 +20,12 @@ function badRequest(message: string): Response {
   )
 }
 
+async function runBatch(db: D1Database, statements: D1PreparedStatement[], chunkSize = 100): Promise<void> {
+  for (let i = 0; i < statements.length; i += chunkSize) {
+    await db.batch(statements.slice(i, i + chunkSize))
+  }
+}
+
 async function performSync(env: Env): Promise<SyncLog> {
   const startTime = Date.now()
   const syncDate = new Date().toISOString().split('T')[0]
@@ -48,7 +54,7 @@ async function performSync(env: Env): Promise<SyncLog> {
     const repos = data.items || []
 
     if (env.DB) {
-      for (const [index, repo] of repos.entries()) {
+      const repoRows = repos.map((repo, index) => {
         const fullName = repo.full_name as string
         const [owner, name] = fullName.split('/')
         const repoId = repo.id as number
@@ -57,25 +63,60 @@ async function performSync(env: Env): Promise<SyncLog> {
         const openIssues = (repo.open_issues_count as number) || 0
         const topics = Array.isArray(repo.topics) ? repo.topics as string[] : []
 
-        const previousSnapshot = await env.DB.prepare(
-          `SELECT stars, forks, rank
-           FROM snapshots
-           WHERE repo_id = ? AND date < ?
-           ORDER BY date DESC
-           LIMIT 1`
-        ).bind(repoId, syncDate).first<{
+        return {
+          repo,
+          repoId,
+          fullName,
+          owner,
+          name,
+          stars,
+          forks,
+          openIssues,
+          topics,
+          rank: index + 1,
+        }
+      })
+
+      const previousByRepoId = new Map<number, { stars: number; forks: number; rank: number }>()
+      if (repoRows.length > 0) {
+        const placeholders = repoRows.map(() => '?').join(',')
+        const previousSnapshots = await env.DB.prepare(
+          `SELECT s.repo_id, s.stars, s.forks, s.rank
+           FROM snapshots s
+           JOIN (
+             SELECT repo_id, MAX(date) AS date
+             FROM snapshots
+             WHERE repo_id IN (${placeholders}) AND date < ?
+             GROUP BY repo_id
+           ) latest ON s.repo_id = latest.repo_id AND s.date = latest.date`
+        ).bind(...repoRows.map(row => row.repoId), syncDate).all<{
+          repo_id: number
           stars: number
           forks: number
           rank: number
         }>()
 
-        const todayStars = previousSnapshot ? Math.max(0, stars - previousSnapshot.stars) : 0
-        const todayForks = previousSnapshot ? Math.max(0, forks - previousSnapshot.forks) : 0
-        const rank = index + 1
-        const rankChange = previousSnapshot ? previousSnapshot.rank - rank : 0
+        for (const snapshot of previousSnapshots.results || []) {
+          previousByRepoId.set(snapshot.repo_id, {
+            stars: snapshot.stars,
+            forks: snapshot.forks,
+            rank: snapshot.rank,
+          })
+        }
+      }
+
+      const statements: D1PreparedStatement[] = []
+      const topicStatements: D1PreparedStatement[] = []
+
+      for (const row of repoRows) {
+        const previousSnapshot = previousByRepoId.get(row.repoId)
+
+        const todayStars = previousSnapshot ? Math.max(0, row.stars - previousSnapshot.stars) : 0
+        const todayForks = previousSnapshot ? Math.max(0, row.forks - previousSnapshot.forks) : 0
+        const rankChange = previousSnapshot ? previousSnapshot.rank - row.rank : 0
         const trendScore = todayStars * 2 + todayForks + Math.max(0, rankChange) * 5
 
-        await env.DB.prepare(
+        statements.push(env.DB.prepare(
           `INSERT INTO repos (id, full_name, owner, name, owner_avatar, description, url, stars, forks, open_issues, language, topics, license, created_at, updated_at, pushed_at, homepage, default_branch)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(full_name) DO UPDATE SET
@@ -89,27 +130,27 @@ async function performSync(env: Env): Promise<SyncLog> {
              homepage = excluded.homepage,
              default_branch = excluded.default_branch`
         ).bind(
-          repoId,
-          fullName,
-          owner,
-          name,
-          (repo.owner as Record<string, string>)?.avatar_url || '',
-          repo.description || '',
-          repo.html_url || '',
-          stars,
-          forks,
-          openIssues,
-          repo.language || '',
-          JSON.stringify(topics),
-          (repo.license as Record<string, string>)?.spdx_id || null,
-          repo.created_at || '',
-          repo.updated_at || '',
-          repo.pushed_at || '',
-          repo.homepage || null,
-          repo.default_branch || 'main',
-        ).run()
+          row.repoId,
+          row.fullName,
+          row.owner,
+          row.name,
+          (row.repo.owner as Record<string, string>)?.avatar_url || '',
+          row.repo.description || '',
+          row.repo.html_url || '',
+          row.stars,
+          row.forks,
+          row.openIssues,
+          row.repo.language || '',
+          JSON.stringify(row.topics),
+          (row.repo.license as Record<string, string>)?.spdx_id || null,
+          row.repo.created_at || '',
+          row.repo.updated_at || '',
+          row.repo.pushed_at || '',
+          row.repo.homepage || null,
+          row.repo.default_branch || 'main',
+        ))
 
-        await env.DB.prepare(
+        statements.push(env.DB.prepare(
           `INSERT INTO snapshots (repo_id, date, stars, forks, open_issues, today_stars, today_forks, trend_score, rank, rank_change)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(repo_id, date) DO UPDATE SET
@@ -122,25 +163,35 @@ async function performSync(env: Env): Promise<SyncLog> {
              rank = excluded.rank,
              rank_change = excluded.rank_change`
         ).bind(
-          repoId,
+          row.repoId,
           syncDate,
-          stars,
-          forks,
-          openIssues,
+          row.stars,
+          row.forks,
+          row.openIssues,
           todayStars,
           todayForks,
           trendScore,
-          rank,
+          row.rank,
           rankChange,
-        ).run()
+        ))
 
-        await env.DB.prepare('DELETE FROM repo_topics WHERE repo_id = ?').bind(repoId).run()
-        for (const topic of topics) {
-          await env.DB.prepare(
+        for (const topic of row.topics) {
+          topicStatements.push(env.DB.prepare(
             `INSERT OR IGNORE INTO repo_topics (repo_id, topic) VALUES (?, ?)`
-          ).bind(repoId, topic).run()
+          ).bind(row.repoId, topic))
         }
       }
+
+      await runBatch(env.DB, statements)
+
+      if (repoRows.length > 0) {
+        const placeholders = repoRows.map(() => '?').join(',')
+        await env.DB.prepare(
+          `DELETE FROM repo_topics WHERE repo_id IN (${placeholders})`
+        ).bind(...repoRows.map(row => row.repoId)).run()
+      }
+
+      await runBatch(env.DB, topicStatements)
 
       await env.DB.prepare(
         `INSERT INTO sync_logs (sync_date, status, total_repos, message, duration)
