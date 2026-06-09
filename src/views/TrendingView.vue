@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { RepoWithTrend, TimeRange, SortBy, PaginatedResponse } from '@/types'
+import type { RepoWithTrend, TimeRange, SortBy } from '@/types'
+import { getTrending } from '@/services/api'
 
 const { t } = useI18n()
 
@@ -16,6 +17,7 @@ const loading = ref(true)
 const repos = ref<RepoWithTrend[]>([])
 const totalPages = ref(1)
 const total = ref(0)
+let fetchId = 0
 
 const timeRanges = computed<{ label: string; value: TimeRange }[]>(() => [
   { label: t('trending.today'), value: 'today' },
@@ -75,39 +77,28 @@ function rankClass(change: number): string {
 }
 
 async function fetchRepos() {
+  const id = ++fetchId
   loading.value = true
   try {
-    // Placeholder data
-    const start = (currentPage.value - 1) * pageSize
-    const mockTotal = 87
-    totalPages.value = Math.ceil(mockTotal / pageSize)
-    total.value = mockTotal
-    repos.value = Array.from({ length: Math.min(pageSize, mockTotal - start) }, (_, i) => ({
-      id: start + i + 1,
-      fullName: `org/repo-${start + i + 1}`,
-      owner: 'org',
-      ownerAvatar: '',
-      description: 'A trending open-source project gaining stars rapidly',
-      url: '#',
-      stars: 40000 - (start + i) * 200,
-      forks: 6000 - (start + i) * 30,
-      openIssues: 80,
-      language: languages[(start + i) % languages.length],
-      topics: [topics[(start + i) % topics.length]],
-      license: 'MIT',
-      createdAt: '2024-01-15',
-      updatedAt: '2025-06-01',
-      pushedAt: '2025-06-01',
-      homepage: null,
-      defaultBranch: 'main',
-      todayStars: 800 - (start + i) * 5,
-      todayForks: 40 - (start + i),
-      trendScore: 95 - (start + i) * 0.5,
-      rank: start + i + 1,
-      rankChange: (start + i) % 4 === 0 ? 3 : (start + i) % 4 === 1 ? -2 : 0,
-    }))
+    const response = await getTrending({
+      page: currentPage.value,
+      pageSize,
+      range: timeRange.value,
+      language: selectedLanguage.value || undefined,
+      topic: selectedTopic.value || undefined,
+      search: searchQuery.value || undefined,
+      sortBy: sortBy.value,
+    })
+
+    if (id !== fetchId) return
+
+    repos.value = response.data
+    total.value = response.total
+    totalPages.value = response.totalPages
   } finally {
-    loading.value = false
+    if (id === fetchId) {
+      loading.value = false
+    }
   }
 }
 

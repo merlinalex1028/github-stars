@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { StatsOverview, RepoWithTrend } from '@/types'
+import { getStatsOverview, getTrending } from '@/services/api'
 
 const { t } = useI18n()
 
@@ -28,40 +29,15 @@ const statCards = computed(() => [
 const stickyColors = ['#fef9c3', '#fce7f3', '#dbeafe', '#dcfce7', '#ffffff']
 
 onMounted(async () => {
+  loading.value = true
   try {
-    // Placeholder data for skeleton rendering
-    stats.value = {
-      totalRepos: 12847,
-      todayStars: 58923,
-      languageCount: 42,
-      aiProjectCount: 1893,
-      topTopic: 'machine-learning',
-      topLanguage: 'TypeScript',
-    }
-    topRepos.value = Array.from({ length: 10 }, (_, i) => ({
-      id: i + 1,
-      fullName: `org/repo-${i + 1}`,
-      owner: 'org',
-      ownerAvatar: '',
-      description: 'A trending open-source project on GitHub',
-      url: '#',
-      stars: 50000 - i * 3000,
-      forks: 8000 - i * 500,
-      openIssues: 120 - i * 10,
-      language: ['TypeScript', 'Rust', 'Python', 'Go', 'Java'][i % 5],
-      topics: ['ai', 'open-source'],
-      license: 'MIT',
-      createdAt: '2023-01-01',
-      updatedAt: '2025-06-01',
-      pushedAt: '2025-06-01',
-      homepage: null,
-      defaultBranch: 'main',
-      todayStars: 1200 - i * 80,
-      todayForks: 60 - i * 4,
-      trendScore: 98.5 - i * 2.3,
-      rank: i + 1,
-      rankChange: i % 3 === 0 ? 2 : i % 3 === 1 ? -1 : 0,
-    }))
+    const [overview, trending] = await Promise.all([
+      getStatsOverview(),
+      getTrending({ page: 1, pageSize: 10, sortBy: 'trend_score' }),
+    ])
+
+    stats.value = overview
+    topRepos.value = trending.data
   } finally {
     loading.value = false
   }

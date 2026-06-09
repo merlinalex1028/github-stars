@@ -79,9 +79,9 @@ export async function getRepoDetail(
 
 export async function getLanguages(): Promise<LanguageStat[]> {
   try {
-    const result = await request<LanguageStat[]>('/languages')
-    if (result && result.length > 0) {
-      return result
+    const result = await request<{ success: boolean; data: LanguageStat[] }>('/languages')
+    if (result.data && result.data.length > 0) {
+      return result.data
     }
     return mockGetLanguages()
   } catch {
@@ -91,9 +91,9 @@ export async function getLanguages(): Promise<LanguageStat[]> {
 
 export async function getTopics(): Promise<TopicStat[]> {
   try {
-    const result = await request<TopicStat[]>('/topics')
-    if (result && result.length > 0) {
-      return result
+    const result = await request<{ success: boolean; data: TopicStat[] }>('/topics')
+    if (result.data && result.data.length > 0) {
+      return result.data
     }
     return mockGetTopics()
   } catch {
@@ -103,9 +103,9 @@ export async function getTopics(): Promise<TopicStat[]> {
 
 export async function getStatsOverview(): Promise<StatsOverview> {
   try {
-    const result = await request<StatsOverview>('/stats/overview')
-    if (result && result.totalRepos > 0) {
-      return result
+    const result = await request<{ success: boolean; data: StatsOverview }>('/stats/overview')
+    if (result.data && result.data.totalRepos > 0) {
+      return result.data
     }
     return mockGetStatsOverview()
   } catch {
@@ -119,7 +119,8 @@ export async function triggerSync(secret?: string): Promise<SyncLog> {
     if (secret) {
       headers['Authorization'] = `Bearer ${secret}`
     }
-    return await request<SyncLog>('/sync', { method: 'POST', headers })
+    const result = await request<{ success: boolean; data: SyncLog }>('/sync', { method: 'POST', headers })
+    return result.data
   } catch {
     return mockTriggerSync()
   }
