@@ -26,6 +26,14 @@ async function runBatch(db: D1Database, statements: D1PreparedStatement[], chunk
   }
 }
 
+function chunkArray<T>(items: T[], chunkSize: number): T[][] {
+  const chunks: T[][] = []
+  for (let i = 0; i < items.length; i += chunkSize) {
+    chunks.push(items.slice(i, i + chunkSize))
+  }
+  return chunks
+}
+
 async function performSync(env: Env): Promise<SyncLog> {
   const startTime = Date.now()
   const syncDate = new Date().toISOString().split('T')[0]
@@ -78,8 +86,8 @@ async function performSync(env: Env): Promise<SyncLog> {
       })
 
       const previousByRepoId = new Map<number, { stars: number; forks: number; rank: number }>()
-      if (repoRows.length > 0) {
-        const placeholders = repoRows.map(() => '?').join(',')
+      for (const repoChunk of chunkArray(repoRows, 50)) {
+        const placeholders = repoChunk.map(() => '?').join(',')
         const previousSnapshots = await env.DB.prepare(
           `SELECT s.repo_id, s.stars, s.forks, s.rank
            FROM snapshots s
@@ -89,7 +97,7 @@ async function performSync(env: Env): Promise<SyncLog> {
              WHERE repo_id IN (${placeholders}) AND date < ?
              GROUP BY repo_id
            ) latest ON s.repo_id = latest.repo_id AND s.date = latest.date`
-        ).bind(...repoRows.map(row => row.repoId), syncDate).all<{
+        ).bind(...repoChunk.map(row => row.repoId), syncDate).all<{
           repo_id: number
           stars: number
           forks: number
@@ -184,11 +192,11 @@ async function performSync(env: Env): Promise<SyncLog> {
 
       await runBatch(env.DB, statements)
 
-      if (repoRows.length > 0) {
-        const placeholders = repoRows.map(() => '?').join(',')
+      for (const repoChunk of chunkArray(repoRows, 50)) {
+        const placeholders = repoChunk.map(() => '?').join(',')
         await env.DB.prepare(
           `DELETE FROM repo_topics WHERE repo_id IN (${placeholders})`
-        ).bind(...repoRows.map(row => row.repoId)).run()
+        ).bind(...repoChunk.map(row => row.repoId)).run()
       }
 
       await runBatch(env.DB, topicStatements)
